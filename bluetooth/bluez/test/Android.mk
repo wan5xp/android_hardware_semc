@@ -18,7 +18,8 @@ LOCAL_SRC_FILES:= \
 
 LOCAL_C_INCLUDES:= \
 	$(LOCAL_PATH)/../lib \
-	$(LOCAL_PATH)/../src
+	$(LOCAL_PATH)/../src \
+	$(LOCAL_PATH)/../../../../../device/sony/$(TARGET_DEVICE)/hardware
 
 LOCAL_SHARED_LIBRARIES := \
 	libbluetoothd libbluetooth
@@ -128,7 +129,8 @@ LOCAL_SRC_FILES:= \
 LOCAL_C_INCLUDES:= \
 	$(LOCAL_PATH)/../lib \
 	$(LOCAL_PATH)/../src \
-	$(call include-path-for, dbus)
+	$(call include-path-for, dbus) \
+	$(LOCAL_PATH)/../../../../../device/sony/$(TARGET_DEVICE)/hardware
 
 LOCAL_SHARED_LIBRARIES := \
 	libdbus
@@ -239,7 +241,10 @@ LOCAL_C_INCLUDES:= \
 	$(LOCAL_PATH)/../lib \
 	$(LOCAL_PATH)/../src \
 	$(call include-path-for, glib) \
-	$(call include-path-for, glib)\glib
+	$(call include-path-for, glib)\glib \
+	$(LOCAL_PATH)/../../glib \
+	$(LOCAL_PATH)/../btio \
+	$(LOCAL_PATH)/../../../../../device/sony/$(TARGET_DEVICE)/hardware
 
 
 LOCAL_SHARED_LIBRARIES := \

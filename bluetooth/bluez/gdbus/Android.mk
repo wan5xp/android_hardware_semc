@@ -9,7 +9,9 @@ LOCAL_CFLAGS+=-O3 -DNEED_DBUS_WATCH_GET_UNIX_FD -Wno-missing-field-initializers 
 LOCAL_C_INCLUDES:= \
 	$(LOCAL_PATH)/../lib \
 	$(call include-path-for, glib) \
-	$(call include-path-for, dbus)
+	$(call include-path-for, dbus) \
+	$(LOCAL_PATH)/../../glib \
+	$(LOCAL_PATH)/../../../../../device/sony/$(TARGET_DEVICE)/hardware
 
 LOCAL_MODULE:=libgdbus_static
 

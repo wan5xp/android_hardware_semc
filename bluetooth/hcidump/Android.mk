@@ -5,6 +5,7 @@ include $(CLEAR_VARS)
 
 LOCAL_C_INCLUDES:= \
 	$(call include-path-for,bluez)/lib/ \
+	$(LOCAL_PATH)/../bluez/lib \
 
 LOCAL_CFLAGS:= \
 	-DVERSION=\"2.0\"

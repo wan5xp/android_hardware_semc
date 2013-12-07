@@ -1,8 +1,11 @@
 #!/usr/bin/python
 
+from __future__ import absolute_import, print_function, unicode_literals
+
 import sys
 import time
 import dbus
+import bluezutils
 
 xml = ' \
 <?xml version="1.0" encoding="UTF-8" ?> 	\
@@ -101,26 +104,24 @@ xml = ' \
 '
 
 bus = dbus.SystemBus()
-manager = dbus.Interface(bus.get_object("org.bluez", "/"),
-						"org.bluez.Manager")
 
 if len(sys.argv) > 1:
-	path = manager.FindAdapter(sys.argv[1])
+	path = bluezutils.find_adapter(sys.argv[1]).object_path
 else:
-	path = manager.DefaultAdapter()
+	path = bluezutils.find_adapter().object_path
 
 service = dbus.Interface(bus.get_object("org.bluez", path),
 						"org.bluez.Service")
 
 handle = service.AddRecord(xml)
 
-print "Service record with handle 0x%04x added" % (handle)
+print("Service record with handle 0x%04x added" % (handle))
 
-print "Press CTRL-C to remove service record"
+print("Press CTRL-C to remove service record")
 
 try:
 	time.sleep(1000)
-	print "Terminating session"
+	print("Terminating session")
 except:
 	pass
 

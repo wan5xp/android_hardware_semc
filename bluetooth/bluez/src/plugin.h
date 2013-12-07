@@ -41,14 +41,14 @@ struct bluetooth_plugin_desc {
 		};
 #else
 #define BLUETOOTH_PLUGIN_DEFINE(name, version, priority, init, exit) \
-		extern struct btd_debug_desc __start___debug_ ## name[] \
+		extern struct btd_debug_desc __start___debug[] \
 				__attribute__ ((weak, visibility("hidden"))); \
-		extern struct btd_debug_desc __stop___debug_ ## name[] \
+		extern struct btd_debug_desc __stop___debug[] \
 				__attribute__ ((weak, visibility("hidden"))); \
 		extern struct bluetooth_plugin_desc bluetooth_plugin_desc \
 				__attribute__ ((visibility("default"))); \
 		struct bluetooth_plugin_desc bluetooth_plugin_desc = { \
 			#name, version, priority, init, exit, \
-			__start___debug_ ## name, __stop___debug_ ## name \
+			__start___debug, __stop___debug \
 		};
 #endif

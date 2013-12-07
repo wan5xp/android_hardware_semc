@@ -672,6 +672,21 @@ int lmp_strtover(char *str, unsigned int *ver)
 	return hci_str2uint(ver_map, str, ver);
 }
 
+static hci_map pal_map[] = {
+	{ "3.0",	0x01 },
+	{ NULL }
+};
+
+char *pal_vertostr(unsigned int ver)
+{
+	return hci_uint2str(pal_map, ver);
+}
+
+int pal_strtover(char *str, unsigned int *ver)
+{
+	return hci_str2uint(pal_map, str, ver);
+}
+
 /* LMP features mapping */
 static hci_map lmp_features_map[8][9] = {
 	{	/* Byte 0 */
@@ -817,7 +832,7 @@ int hci_for_each_dev(int flag, int (*func)(int dd, int dev_id, long arg),
 	int dev_id = -1;
 	int i, sk, err = 0;
 
-	sk = socket(AF_BLUETOOTH, SOCK_RAW, BTPROTO_HCI);
+	sk = socket(AF_BLUETOOTH, SOCK_RAW | SOCK_CLOEXEC, BTPROTO_HCI);
 	if (sk < 0)
 		return -1;
 
@@ -860,7 +875,7 @@ done:
 
 static int __other_bdaddr(int dd, int dev_id, long arg)
 {
-	struct hci_dev_info di = { dev_id: dev_id };
+	struct hci_dev_info di = { .dev_id = dev_id };
 
 	if (ioctl(dd, HCIGETDEVINFO, (void *) &di))
 		return 0;
@@ -873,7 +888,7 @@ static int __other_bdaddr(int dd, int dev_id, long arg)
 
 static int __same_bdaddr(int dd, int dev_id, long arg)
 {
-	struct hci_dev_info di = { dev_id: dev_id };
+	struct hci_dev_info di = { .dev_id = dev_id };
 
 	if (ioctl(dd, HCIGETDEVINFO, (void *) &di))
 		return 0;
@@ -909,7 +924,7 @@ int hci_devinfo(int dev_id, struct hci_dev_info *di)
 {
 	int dd, err, ret;
 
-	dd = socket(AF_BLUETOOTH, SOCK_RAW, BTPROTO_HCI);
+	dd = socket(AF_BLUETOOTH, SOCK_RAW | SOCK_CLOEXEC, BTPROTO_HCI);
 	if (dd < 0)
 		return dd;
 
@@ -965,7 +980,7 @@ int hci_inquiry(int dev_id, int len, int nrsp, const uint8_t *lap,
 		}
 	}
 
-	dd = socket(AF_BLUETOOTH, SOCK_RAW, BTPROTO_HCI);
+	dd = socket(AF_BLUETOOTH, SOCK_RAW | SOCK_CLOEXEC, BTPROTO_HCI);
 	if (dd < 0)
 		return dd;
 
@@ -1021,7 +1036,7 @@ int hci_open_dev(int dev_id)
 	int dd, err;
 
 	/* Create HCI socket */
-	dd = socket(AF_BLUETOOTH, SOCK_RAW, BTPROTO_HCI);
+	dd = socket(AF_BLUETOOTH, SOCK_RAW | SOCK_CLOEXEC, BTPROTO_HCI);
 	if (dd < 0)
 		return dd;
 
@@ -2829,7 +2844,7 @@ int hci_le_set_advertise_enable(int dd, uint8_t enable, int to)
 int hci_le_create_conn(int dd, uint16_t interval, uint16_t window,
 		uint8_t initiator_filter, uint8_t peer_bdaddr_type,
 		bdaddr_t peer_bdaddr, uint8_t own_bdaddr_type,
-		uint16_t min_interval, 	uint16_t max_interval,
+		uint16_t min_interval, uint16_t max_interval,
 		uint16_t latency, uint16_t supervision_timeout,
 		uint16_t min_ce_length, uint16_t max_ce_length,
 		uint16_t *handle, int to)
@@ -2911,82 +2926,3 @@ int hci_le_conn_update(int dd, uint16_t handle, uint16_t min_interval,
 
 	return 0;
 }
-
-int hci_vs_ext_flow_spec(int dd, uint16_t handle, uint16_t service_interval,
-		uint16_t out_service_window, uint16_t in_service_window,
-		uint8_t cqae, uint16_t packet_size, uint8_t *rsp_status, int to)
-{
-	vs_ext_flow_spec_cp cp;
-	vs_ext_flow_spec_rp rp;
-	struct hci_request rq;
-
-	memset(&cp, 0, sizeof(cp));
-	cp.handle = handle;
-	cp.service_interval = service_interval;
-	cp.out_service_window = out_service_window;
-	cp.in_service_window = in_service_window;
-	cp.cqae = cqae;
-	cp.packet_size = packet_size;
-
-	memset(&rq, 0, sizeof(rq));
-	rq.ogf    = OGF_VENDOR_CMD;
-	rq.ocf    = OCF_VS_EXT_FLOW_SPEC;
-	rq.cparam = &cp;
-	rq.clen   = VS_EXT_FLOW_SPEC_CP_SIZE;
-	rq.rparam = &rp;
-	rq.rlen   = VS_EXT_FLOW_SPEC_RP_SIZE;
-
-	if (hci_send_req(dd, &rq, to) < 0)
-		return -1;
-
-	if (rsp_status)
-		*rsp_status = rp.status;
-	if (rp.status) {
-		errno = EIO;
-		return -1;
-	}
-
-	return 0;
-}
-
-int hci_write_flow_spec(int dd, uint16_t handle, uint16_t token_bucket_size,
-		uint16_t access_latency, uint8_t direction,
-		uint8_t service_type, uint8_t flags, uint16_t token_rate,
-		uint16_t peak_bandwidth, uint8_t *rsp_status, int to)
-{
-	flow_spec_cp cp;
-	evt_flow_spec_complete rp;
-	struct hci_request rq;
-
-	memset(&cp, 0, sizeof(cp));
-	cp.handle = handle;
-	cp.flags = flags;
-	cp.spec.direction = direction;
-	cp.spec.service_type = service_type;
-	cp.spec.access_latency = access_latency;
-	cp.spec.token_bucket_size = token_bucket_size;
-	cp.spec.token_rate = token_rate;
-	cp.spec.peak_bandwidth = peak_bandwidth;
-
-	memset(&rq, 0, sizeof(rq));
-	rq.ogf    = OGF_LINK_POLICY;
-	rq.ocf    = OCF_FLOW_SPECIFICATION;
-	rq.event = EVT_FLOW_SPEC_COMPLETE;
-	rq.cparam = &cp;
-	rq.clen   = FLOW_SPEC_CP_SIZE;
-	rq.rparam = &rp;
-	rq.rlen   = EVT_FLOW_SPEC_COMPLETE_SIZE;
-
-	if (hci_send_req(dd, &rq, to) < 0)
-		return -1;
-
-	if (rsp_status)
-		*rsp_status = rp.status;
-	if (rp.status) {
-		errno = EIO;
-		return -1;
-	}
-
-	return 0;
-}
-

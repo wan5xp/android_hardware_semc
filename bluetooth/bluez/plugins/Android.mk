@@ -7,11 +7,15 @@ LOCAL_PATH:= $(call my-dir)
 include $(CLEAR_VARS)
 
 LOCAL_SRC_FILES:= \
-	hciops.c \
-	dbusoob.c \
+	autopair.c \
+	external-dummy.c \
+	hostname.c \
+	neard.c \
+	policy.c \
+	wiimote.c \
 
 LOCAL_CFLAGS:= \
-	-DVERSION=\"4.93\" \
+	-DVERSION=\"5.11\" \
 	-DBLUETOOTH_PLUGIN_BUILTIN \
 	-DSTORAGEDIR=\"/data/misc/bluetoothd\" \
 	-Wno-missing-field-initializers \
@@ -20,11 +24,11 @@ LOCAL_CFLAGS:= \
 LOCAL_C_INCLUDES:= \
 	$(LOCAL_PATH)/../btio \
 	$(LOCAL_PATH)/../lib \
-	$(LOCAL_PATH)/../gdbus \
+	$(LOCAL_PATH)/../ \
 	$(LOCAL_PATH)/../src \
 	$(call include-path-for, glib) \
 	$(call include-path-for, dbus) \
-	$(LOCAL_PATH)/../../glib \
+	$(LOCAL_PATH)/../../glib/include \
 	$(LOCAL_PATH)/../../../../../device/sony/$(TARGET_DEVICE)/hardware \
 
 LOCAL_SHARED_LIBRARIES := \

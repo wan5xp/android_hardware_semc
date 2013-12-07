@@ -1,3 +1,226 @@
+ver 5.11:
+	Fix issue with connection attempt when not powered.
+	Fix issue with assigning player to AVRCP target role.
+	Fix issue with OBEX default cache directory.
+	Fix issue with SDP search error handling.
+	Fix issue with processing of SDP records.
+	Fix issue with HID to HCI switching utility.
+	Fix issue with mgmt end-to-end testing tool.
+	Fix issue with L2CAP end-to-end testing tool.
+	Add support for SMP end-to-end testing tool.
+	Add support for more Wii controllers.
+
+ver 5.10:
+	Fix issue with discoverable timeout handling.
+	Fix issue with MAP messages and record version.
+	Fix issue with MAP messages and status events.
+	Fix issue with MAP messages and relative folders.
+	Fix issue with MAP messages and type property signals.
+	Fix issue with transfer size for OBEX GET operations.
+	Fix issue with AVRCP service class identifier.
+	Fix issue with AVRCP tracking seeked signal.
+	Add support for OBEX command line client.
+
+ver 5.9:
+	Fix issue with network service and adapter removal.
+	Fix issue with misleading OBEX error messages.
+	Fix issue with OBEX transport reference handling.
+	Fix issue with memory leak with MAP event handler.
+	Fix issue with missing MAP property changed signal.
+	Fix issue with message type property values.
+	Fix issue with empty UUID list for devices.
+	Fix issue with profile agent cancel method.
+	Remove dependency on USB library.
+
+ver 5.8:
+	Fix issue with missing OBEX session properties.
+	Fix issue with missing SDP service refresh.
+	Fix issue with SDP attribute range check.
+	Fix issue with priority for SDP transactions.
+	Fix issue with service discovery after pairing.
+	Fix issue with race condition in service list.
+	Fix issue with input service state transition.
+	Fix issue with default authorization for profiles.
+	Fix issue with AVRCP browsing channel connections.
+	Add support for AVRCP role agnostic sessions.
+
+ver 5.7:
+	Fix issue with missing UUID discovery during pairing.
+	Fix issue with broken patch for SDP range check handling.
+	Fix issue with AVRCP usage of UID=0 for paused/stopped.
+	Add support MAP notification dispatching.
+
+ver 5.6:
+	Fix issue with incoming connections without SDP record.
+	Fix issue with canceling ongoing device connections.
+	Fix issue with handling failed connection attempts.
+	Fix issue with pending resume during A2DP open failures.
+	Fix issue with registering AVRCP unsupported notification.
+	Fix issue with listing available AVRCP target settings.
+	Fix issue with missing error for OBEX SetPath commands.
+	Fix issue with missing OBEX session command queue.
+	Fix issue with retrieving multiple MAP event reports.
+	Add support for command line player utility.
+
+ver 5.5:
+	Fix issue with race condition between SDP and properties.
+	Fix issue with handling storage of private device addresses.
+	Fix issue with NFC out-of-band pairing and power states.
+	Fix issue with short name during device update handling.
+	Fix issue with handling AVRCP without A2DP being present.
+	Add support for handling AVRCP pass-through operations.
+	Add support for automatically reconnecting HID devices.
+	Add support for automatically pairing of devices.
+
+ver 5.4:
+	Fix issue with invalid memory access and SDP service search.
+	Add support for available player changed event for controller.
+	Add support for UIDs changed event for AVRCP controller.
+	Add support for mandatory AVRCP pass-through operations.
+	Add support for Message Notification Service (MNS) server.
+	Add support for agent methods within command line client.
+
+ver 5.3:
+	Fix issue with registering invalid profiles.
+	Fix issue with inconsistent A2DP transport state.
+	Fix issue with A2DP resume while in configured state.
+	Fix issue with buffer overflow when processing SDP response.
+	Fix issue with missing range check for SDP attribute response.
+	Fix issue with missing validation of SDP data elements.
+	Fix issue with missing fallback to static hostname.
+	Fix issue with default adapter assignment.
+
+ver 5.2:
+	Fix issue with connection handling for Low Energy.
+	Fix issue with broken device discovery handling.
+	Fix issue with invalid memory access within A2DP.
+	Fix issue with handling empty path name of SetPath.
+	Fix issue with handling Message Access Profile filters.
+	Fix issue with handling network service unregistration.
+	Fix issue with not handling bogus device pairing results.
+	Fix issue with initial service discovery and profile manager.
+	Add support for AVRCP volume notifications.
+	Add support for AVRCP browsing commands.
+
+ver 5.1:
+	Fix issue with crash when removing OBEX session.
+	Fix issue with HID device disconnected from kernel.
+	Fix issue with buffer overflow when parsing HID SDP record.
+	Fix issue with SDP_TEXT_STR16 and SDP_URL_STR16 parsing.
+	Add support for integration with systemd's hostname daemon.
+	Add support for separate adapter alias property.
+	Add support for adapter and device modalias properties.
+	Add support for official BlueZ device information.
+	Add support for asynchronous management interface handling.
+	Add tool for testing management interface compliance.
+	Add tool for testing SDP qualification requirements.
+	Add tool for testing various EIR and AD data records.
+
+ver 5.0:
+	Introduce D-Bus Properties and ObjectManager interfaces.
+	Add support for generic profile interface.
+	Add support for global agent interface.
+	Add support for integrated OBEX daemon.
+	Add support for integrated hcidump utility.
+	Add support for Bluetooth tracing and monitor utility.
+	Add support for Bluetooth command line client utility.
+	Remove support for Handsfree gateway handling.
+	Remove support for GStreamer A2DP and SBC elements.
+	Disable default installation of Bluetooth library.
+
+ver 4.101:
+	Fix issue with missing BlueZ service file.
+	Fix issue with aborting A2DP setup during AVDTP start.
+	Fix issue with handling of multiple A2DP indication.
+	Fix issue with handling AVDTP abort with invalid SEID.
+	Fix issue with rejecting AVDTP abort commands.
+	Add support for handling AVDTP command collision.
+
+ver 4.100:
+	Fix issue with crashing when SCO connection fails.
+	Fix issue with HFP gateway failing on first GSM connection.
+	Fix issue with AVRCP and handling of vendor commands.
+	Fix issue with handling AVRCP subunit info command.
+	Fix issue with missing capability for AVRCP track reached end.
+	Fix issue with AVDTP signaling and GStreamer SBC NULL check.
+	Fix issue with AVDTP Reconfigure Reject message.
+	Fix issue with incorrect EIR length parsing.
+	Fix issue with SDP disconnect for HIDSDPDisable.
+	Fix issue with SDP interoperability with Mac OS X Lion.
+	Fix issue with reverse SDP discovery with some devices.
+	Fix issue with discovering state during power off operation.
+	Add support for AVRCP Volume Changed notifications.
+	Add support for AVRCP Set Absolute Volume handling.
+	Add support for display legacy PIN code agent method.
+	Add support for multiple media transports per endpoint.
+	Add support for discovering device information characteristics.
+	Add support for vendor source for Device ID setting.
+	Add support for immediate alert server.
+	Add support for link loss server.
+
+	Notes:
+	This version requires D-Bus 1.4 or later.
+	This version requires GLib 2.28 or later.
+
+ver 4.99:
+	Fix issue with missing retries for BNEP connection setup.
+	Fix issue with not showing name if first EIR has no details.
+	Fix issue with running SDP discovery for LE devices.
+	Add support for GATT using 128-bit Bluetooth UUIDs.
+	Add support for retrieving key size information.
+	Add support for storing Long Term Keys.
+	Add support for Proximity Reporter API.
+	Add support for KeyboardDisplay IO capability.
+	Add support for version 1.0 of management API.
+	Add support for monitoring interface.
+
+ver 4.98:
+	Fix issue with adapter list upon initialization failure.
+	Fix issue with missing legacy property for Low Energy.
+	Fix issue with missing EIR information handling.
+	Fix issue with device address type tracking.
+	Fix issue with alert level characteristic.
+	Fix issue with headset shutdown handling.
+	Fix issue with Wiimote address handling.
+	Add support for advanced l2test options.
+	Add support for attribute protocol and multiple adapters.
+
+ver 4.97:
+	Update support for proximity profile.
+	Fix issue with SBC audio decoding quality.
+	Fix multiple issues with HFP support.
+	Fix multiple issues with A2DP support.
+	Fix multiple issues with AVDTP support.
+	Fix multiple issues with AVRCP support.
+	Add support for AVRCP meta-data transfer.
+	Add support for Bluetooth based thermometers.
+
+ver 4.96:
+	Fix issue with race condition in AVDTP stream start.
+	Fix issue with global adapter offline switching.
+	Fix issue with pairing and No Bonding devices.
+	Add support for Nintendo Wii Remote pairing.
+
+ver 4.95:
+	Fix issue with AVCTP replies with invalid PID.
+	Fix issue with AVRCP and unknown packet types.
+	Fix issue with AVRCP not using NOT_IMPLEMENTED correctly.
+	Fix issue with AVDTP discovery if all endpoints are in use.
+	Fix issue with invalid memory writes and media support.
+	Fix issue with not removing device alias and unbonding.
+	Fix issue with device disconnects and offline mode handling.
+	Add support for setting adapter name based on machine-info.
+	Add support for systemd service configuration.
+
+ver 4.94:
+	Fix issue with invalid read of memory in various modules.
+	Fix issue with buffer overflow when sending AVDTP commands.
+	Fix issue with response to vendor dependent AVRCP commands.
+	Fix issue with headset when not able to reply with ERROR.
+	Fix issue with crash when creating a device from storage.
+	Fix issue with handling non UTF-8 devices names.
+	Add support for improved discovery procedure.
+
 ver 4.93:
 	Fix issue with property type and Health Main channel.
 	Fix issue with crash when removing devices.

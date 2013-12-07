@@ -41,11 +41,13 @@
 #define HCI_UART_ATH3K  5
 
 #define HCI_UART_RAW_DEVICE	0
+#define HCI_UART_RESET_ON_INIT	1
+#define HCI_UART_CREATE_AMP	2
 
-int read_hci_event(int fd, unsigned char* buf, int size);
+int read_hci_event(int fd, unsigned char *buf, int size);
 int set_speed(int fd, struct termios *ti, int speed);
 
-int texas_init(int fd, struct termios *ti);
+int texas_init(int fd, int *speed, struct termios *ti);
 int texas_post(int fd, struct termios *ti);
 int texasalt_init(int fd, int speed, struct termios *ti);
 int stlc2500_init(int fd, bdaddr_t *bdaddr);
@@ -54,3 +56,4 @@ int ath3k_init(int fd, int speed, int init_speed, char *bdaddr,
 						struct termios *ti);
 int ath3k_post(int fd, int pm);
 int qualcomm_init(int fd, int speed, struct termios *ti, const char *bdaddr);
+int intel_init(int fd, int init_speed, int *speed, struct termios *ti);

@@ -24,42 +24,27 @@
  */
 
 struct main_opts {
-	char		host_name[40];
-	unsigned long	flags;
 	char		*name;
 	uint32_t	class;
-	uint16_t	pageto;
-	uint32_t	discovto;
+	uint16_t	autoto;
 	uint32_t	pairto;
-	uint16_t	link_mode;
-	uint16_t	link_policy;
-	gboolean	remember_powered;
+	uint32_t	discovto;
 	gboolean	reverse_sdp;
 	gboolean	name_resolv;
 	gboolean	debug_keys;
-	gboolean	attrib_server;
-	gboolean	le;
 
-	uint8_t		mode;
-	uint8_t		discov_interval;
-	char		deviceid[15]; /* FIXME: */
-};
-
-enum {
-	HCID_SET_NAME,
-	HCID_SET_CLASS,
-	HCID_SET_PAGETO,
-	HCID_SET_DISCOVTO,
+	uint16_t	did_source;
+	uint16_t	did_vendor;
+	uint16_t	did_product;
+	uint16_t	did_version;
 };
 
 extern struct main_opts main_opts;
 
-void btd_start_exit_timer(void);
-void btd_stop_exit_timer(void);
-
-gboolean plugin_init(GKeyFile *config, const char *enable,
-							const char *disable);
+gboolean plugin_init(const char *enable, const char *disable);
 void plugin_cleanup(void);
 
 void rfkill_init(void);
 void rfkill_exit(void);
+
+void btd_exit(void);

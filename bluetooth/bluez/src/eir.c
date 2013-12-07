@@ -21,7 +21,13 @@
  *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
  */
+
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
 #include <errno.h>
+#include <ctype.h>
 #include <stdlib.h>
 #include <stdint.h>
 #include <glib.h>
@@ -30,145 +36,227 @@
 #include <bluetooth/hci.h>
 #include <bluetooth/sdp.h>
 
-#include "glib-compat.h"
 #include "glib-helper.h"
 #include "eir.h"
 
-#define EIR_FLAGS                   0x01  /* flags */
-#define EIR_UUID16_SOME             0x02  /* 16-bit UUID, more available */
-#define EIR_UUID16_ALL              0x03  /* 16-bit UUID, all listed */
-#define EIR_UUID32_SOME             0x04  /* 32-bit UUID, more available */
-#define EIR_UUID32_ALL              0x05  /* 32-bit UUID, all listed */
-#define EIR_UUID128_SOME            0x06  /* 128-bit UUID, more available */
-#define EIR_UUID128_ALL             0x07  /* 128-bit UUID, all listed */
-#define EIR_NAME_SHORT              0x08  /* shortened local name */
-#define EIR_NAME_COMPLETE           0x09  /* complete local name */
-#define EIR_TX_POWER                0x0A  /* transmit power level */
-#define EIR_DEVICE_ID               0x10  /* device ID */
+#define EIR_OOB_MIN (2 + 6)
 
 void eir_data_free(struct eir_data *eir)
 {
-	g_slist_foreach(eir->services, (GFunc) g_free, NULL);
-	g_slist_free(eir->services);
+	g_slist_free_full(eir->services, g_free);
+	eir->services = NULL;
 	g_free(eir->name);
+	eir->name = NULL;
+	g_free(eir->hash);
+	eir->hash = NULL;
+	g_free(eir->randomizer);
+	eir->randomizer = NULL;
 }
 
-int eir_parse(struct eir_data *eir, uint8_t *eir_data)
+static void eir_parse_uuid16(struct eir_data *eir, const void *data,
+								uint8_t len)
 {
-	uint16_t len = 0;
-	size_t total;
-	size_t uuid16_count = 0;
-	size_t uuid32_count = 0;
-	size_t uuid128_count = 0;
-	uint8_t *uuid16 = NULL;
-	uint8_t *uuid32 = NULL;
-	uint8_t *uuid128 = NULL;
+	const uint16_t *uuid16 = data;
 	uuid_t service;
 	char *uuid_str;
 	unsigned int i;
 
+	service.type = SDP_UUID16;
+	for (i = 0; i < len / 2; i++, uuid16++) {
+		service.value.uuid16 = bt_get_le16(uuid16);
+
+		uuid_str = bt_uuid2string(&service);
+		eir->services = g_slist_append(eir->services, uuid_str);
+	}
+}
+
+static void eir_parse_uuid32(struct eir_data *eir, const void *data,
+								uint8_t len)
+{
+	const uint32_t *uuid32 = data;
+	uuid_t service;
+	char *uuid_str;
+	unsigned int i;
+
+	service.type = SDP_UUID32;
+	for (i = 0; i < len / 4; i++, uuid32++) {
+		service.value.uuid32 = bt_get_le32(uuid32);
+
+		uuid_str = bt_uuid2string(&service);
+		eir->services = g_slist_append(eir->services, uuid_str);
+	}
+}
+
+static void eir_parse_uuid128(struct eir_data *eir, const uint8_t *data,
+								uint8_t len)
+{
+	const uint8_t *uuid_ptr = data;
+	uuid_t service;
+	char *uuid_str;
+	unsigned int i;
+	int k;
+
+	service.type = SDP_UUID128;
+	for (i = 0; i < len / 16; i++) {
+		for (k = 0; k < 16; k++)
+			service.value.uuid128.data[k] = uuid_ptr[16 - k - 1];
+		uuid_str = bt_uuid2string(&service);
+		eir->services = g_slist_append(eir->services, uuid_str);
+		uuid_ptr += 16;
+	}
+}
+
+static char *name2utf8(const uint8_t *name, uint8_t len)
+{
+	char utf8_name[HCI_MAX_NAME_LENGTH + 2];
+	int i;
+
+	if (g_utf8_validate((const char *) name, len, NULL))
+		return g_strndup((char *) name, len);
+
+	memset(utf8_name, 0, sizeof(utf8_name));
+	strncpy(utf8_name, (char *) name, len);
+
+	/* Assume ASCII, and replace all non-ASCII with spaces */
+	for (i = 0; utf8_name[i] != '\0'; i++) {
+		if (!isascii(utf8_name[i]))
+			utf8_name[i] = ' ';
+	}
+
+	/* Remove leading and trailing whitespace characters */
+	g_strstrip(utf8_name);
+
+	return g_strdup(utf8_name);
+}
+
+int eir_parse(struct eir_data *eir, const uint8_t *eir_data, uint8_t eir_len)
+{
+	uint16_t len = 0;
+
 	eir->flags = -1;
+	eir->tx_power = 127;
 
 	/* No EIR data to parse */
 	if (eir_data == NULL)
 		return 0;
 
-	while (len < HCI_MAX_EIR_LENGTH - 1) {
+	while (len < eir_len - 1) {
 		uint8_t field_len = eir_data[0];
+		const uint8_t *data;
+		uint8_t data_len;
 
 		/* Check for the end of EIR */
 		if (field_len == 0)
 			break;
 
+		len += field_len + 1;
+
+		/* Do not continue EIR Data parsing if got incorrect length */
+		if (len > eir_len)
+			break;
+
+		data = &eir_data[2];
+		data_len = field_len - 1;
+
 		switch (eir_data[1]) {
 		case EIR_UUID16_SOME:
 		case EIR_UUID16_ALL:
-			uuid16_count = field_len / 2;
-			uuid16 = &eir_data[2];
+			eir_parse_uuid16(eir, data, data_len);
 			break;
+
 		case EIR_UUID32_SOME:
 		case EIR_UUID32_ALL:
-			uuid32_count = field_len / 4;
-			uuid32 = &eir_data[2];
+			eir_parse_uuid32(eir, data, data_len);
 			break;
+
 		case EIR_UUID128_SOME:
 		case EIR_UUID128_ALL:
-			uuid128_count = field_len / 16;
-			uuid128 = &eir_data[2];
+			eir_parse_uuid128(eir, data, data_len);
 			break;
+
 		case EIR_FLAGS:
-			eir->flags = eir_data[2];
+			if (data_len > 0)
+				eir->flags = *data;
 			break;
+
 		case EIR_NAME_SHORT:
 		case EIR_NAME_COMPLETE:
-			if (g_utf8_validate((char *) &eir_data[2],
-							field_len - 1, NULL))
-				eir->name = g_strndup((char *) &eir_data[2],
-								field_len - 1);
-			else
-				eir->name = g_strdup("");
+			/* Some vendors put a NUL byte terminator into
+			 * the name */
+			while (data_len > 0 && data[data_len - 1] == '\0')
+				data_len--;
+
+			g_free(eir->name);
+
+			eir->name = name2utf8(data, data_len);
 			eir->name_complete = eir_data[1] == EIR_NAME_COMPLETE;
+			break;
+
+		case EIR_TX_POWER:
+			if (data_len < 1)
+				break;
+			eir->tx_power = (int8_t) data[0];
+			break;
+
+		case EIR_CLASS_OF_DEV:
+			if (data_len < 3)
+				break;
+			eir->class = data[0] | (data[1] << 8) |
+							(data[2] << 16);
+			break;
+
+		case EIR_GAP_APPEARANCE:
+			if (data_len < 2)
+				break;
+			eir->appearance = bt_get_le16(data);
+			break;
+
+		case EIR_SSP_HASH:
+			if (data_len < 16)
+				break;
+			eir->hash = g_memdup(data, 16);
+			break;
+
+		case EIR_SSP_RANDOMIZER:
+			if (data_len < 16)
+				break;
+			eir->randomizer = g_memdup(data, 16);
 			break;
 		}
 
-		len += field_len + 1;
 		eir_data += field_len + 1;
 	}
 
-	/* Bail out if got incorrect length */
-	if (len > HCI_MAX_EIR_LENGTH)
-		return -EINVAL;
+	return 0;
+}
 
-	total = uuid16_count + uuid32_count + uuid128_count;
+int eir_parse_oob(struct eir_data *eir, uint8_t *eir_data, uint16_t eir_len)
+{
 
-	/* No UUIDs were parsed, so skip code below */
-	if (!total)
-		return 0;
+	if (eir_len < EIR_OOB_MIN)
+		return -1;
 
-	/* Generate uuids in SDP format (EIR data is Little Endian) */
-	service.type = SDP_UUID16;
-	for (i = 0; i < uuid16_count; i++) {
-		uint16_t val16 = uuid16[1];
+	if (eir_len != bt_get_le16(eir_data))
+		return -1;
 
-		val16 = (val16 << 8) + uuid16[0];
-		service.value.uuid16 = val16;
-		uuid_str = bt_uuid2string(&service);
-		eir->services = g_slist_append(eir->services, uuid_str);
-		uuid16 += 2;
-	}
+	eir_data += sizeof(uint16_t);
+	eir_len -= sizeof(uint16_t);
 
-	service.type = SDP_UUID32;
-	for (i = uuid16_count; i < uuid32_count + uuid16_count; i++) {
-		uint32_t val32 = uuid32[3];
-		int k;
+	memcpy(&eir->addr, eir_data, sizeof(bdaddr_t));
+	eir_data += sizeof(bdaddr_t);
+	eir_len -= sizeof(bdaddr_t);
 
-		for (k = 2; k >= 0; k--)
-			val32 = (val32 << 8) + uuid32[k];
-
-		service.value.uuid32 = val32;
-		uuid_str = bt_uuid2string(&service);
-		eir->services = g_slist_append(eir->services, uuid_str);
-		uuid32 += 4;
-	}
-
-	service.type = SDP_UUID128;
-	for (i = uuid32_count + uuid16_count; i < total; i++) {
-		int k;
-
-		for (k = 0; k < 16; k++)
-			service.value.uuid128.data[k] = uuid128[16 - k - 1];
-
-		uuid_str = bt_uuid2string(&service);
-		eir->services = g_slist_append(eir->services, uuid_str);
-		uuid128 += 16;
-	}
+	/* optional OOB EIR data */
+	if (eir_len > 0)
+		return eir_parse(eir, eir_data, eir_len);
 
 	return 0;
 }
 
 #define SIZEOF_UUID128 16
 
-static void eir_generate_uuid128(GSList *list, uint8_t *ptr, uint16_t *eir_len)
+static void eir_generate_uuid128(sdp_list_t *list, uint8_t *ptr,
+							uint16_t *eir_len)
 {
 	int i, k, uuid_count = 0;
 	uint16_t len = *eir_len;
@@ -179,10 +267,11 @@ static void eir_generate_uuid128(GSList *list, uint8_t *ptr, uint16_t *eir_len)
 	uuid128 = ptr + 2;
 
 	for (; list; list = list->next) {
-		struct uuid_info *uuid = list->data;
-		uint8_t *uuid128_data = uuid->uuid.value.uuid128.data;
+		sdp_record_t *rec = list->data;
+		uuid_t *uuid = &rec->svclass;
+		uint8_t *uuid128_data = uuid->value.uuid128.data;
 
-		if (uuid->uuid.type != SDP_UUID128)
+		if (uuid->type != SDP_UUID128)
 			continue;
 
 		/* Stop if not enough space to put next UUID128 */
@@ -224,17 +313,62 @@ static void eir_generate_uuid128(GSList *list, uint8_t *ptr, uint16_t *eir_len)
 	}
 }
 
-void eir_create(const char *name, int8_t tx_power, uint16_t did_vendor,
-			uint16_t did_product, uint16_t did_version,
-			GSList *uuids, uint8_t *data)
+int eir_create_oob(const bdaddr_t *addr, const char *name, uint32_t cod,
+			const uint8_t *hash, const uint8_t *randomizer,
+			uint16_t did_vendor, uint16_t did_product,
+			uint16_t did_version, uint16_t did_source,
+			sdp_list_t *uuids, uint8_t *data)
 {
-	GSList *l;
+	sdp_list_t *l;
 	uint8_t *ptr = data;
-	uint16_t eir_len = 0;
+	uint16_t eir_optional_len = 0;
+	uint16_t eir_total_len;
 	uint16_t uuid16[HCI_MAX_EIR_LENGTH / 2];
 	int i, uuid_count = 0;
 	gboolean truncated = FALSE;
 	size_t name_len;
+
+	eir_total_len =  sizeof(uint16_t) + sizeof(bdaddr_t);
+	ptr += sizeof(uint16_t);
+
+	memcpy(ptr, addr, sizeof(bdaddr_t));
+	ptr += sizeof(bdaddr_t);
+
+	if (cod > 0) {
+		uint8_t class[3];
+
+		class[0] = (uint8_t) cod;
+		class[1] = (uint8_t) (cod >> 8);
+		class[2] = (uint8_t) (cod >> 16);
+
+		*ptr++ = 4;
+		*ptr++ = EIR_CLASS_OF_DEV;
+
+		memcpy(ptr, class, sizeof(class));
+		ptr += sizeof(class);
+
+		eir_optional_len += sizeof(class) + 2;
+	}
+
+	if (hash) {
+		*ptr++ = 17;
+		*ptr++ = EIR_SSP_HASH;
+
+		memcpy(ptr, hash, 16);
+		ptr += 16;
+
+		eir_optional_len += 16 + 2;
+	}
+
+	if (randomizer) {
+		*ptr++ = 17;
+		*ptr++ = EIR_SSP_RANDOMIZER;
+
+		memcpy(ptr, randomizer, 16);
+		ptr += 16;
+
+		eir_optional_len += 16 + 2;
+	}
 
 	name_len = strlen(name);
 
@@ -251,61 +385,55 @@ void eir_create(const char *name, int8_t tx_power, uint16_t did_vendor,
 
 		memcpy(ptr + 2, name, name_len);
 
-		eir_len += (name_len + 2);
+		eir_optional_len += (name_len + 2);
 		ptr += (name_len + 2);
 	}
 
-	if (tx_power != 0) {
-		*ptr++ = 2;
-		*ptr++ = EIR_TX_POWER;
-		*ptr++ = (uint8_t) tx_power;
-		eir_len += 3;
-	}
-
 	if (did_vendor != 0x0000) {
-		uint16_t source = 0x0002;
 		*ptr++ = 9;
 		*ptr++ = EIR_DEVICE_ID;
-		*ptr++ = (source & 0x00ff);
-		*ptr++ = (source & 0xff00) >> 8;
+		*ptr++ = (did_source & 0x00ff);
+		*ptr++ = (did_source & 0xff00) >> 8;
 		*ptr++ = (did_vendor & 0x00ff);
 		*ptr++ = (did_vendor & 0xff00) >> 8;
 		*ptr++ = (did_product & 0x00ff);
 		*ptr++ = (did_product & 0xff00) >> 8;
 		*ptr++ = (did_version & 0x00ff);
 		*ptr++ = (did_version & 0xff00) >> 8;
-		eir_len += 10;
+		eir_optional_len += 10;
 	}
 
 	/* Group all UUID16 types */
-	for (l = uuids; l != NULL; l = g_slist_next(l)) {
-		struct uuid_info *uuid = l->data;
+	for (l = uuids; l != NULL; l = l->next) {
+		sdp_record_t *rec = l->data;
+		uuid_t *uuid = &rec->svclass;
 
-		if (uuid->uuid.type != SDP_UUID16)
+		if (uuid->type != SDP_UUID16)
 			continue;
 
-		if (uuid->uuid.value.uuid16 < 0x1100)
+		if (uuid->value.uuid16 < 0x1100)
 			continue;
 
-		if (uuid->uuid.value.uuid16 == PNP_INFO_SVCLASS_ID)
+		if (uuid->value.uuid16 == PNP_INFO_SVCLASS_ID)
 			continue;
 
 		/* Stop if not enough space to put next UUID16 */
-		if ((eir_len + 2 + sizeof(uint16_t)) > HCI_MAX_EIR_LENGTH) {
+		if ((eir_optional_len + 2 + sizeof(uint16_t)) >
+				HCI_MAX_EIR_LENGTH) {
 			truncated = TRUE;
 			break;
 		}
 
 		/* Check for duplicates */
 		for (i = 0; i < uuid_count; i++)
-			if (uuid16[i] == uuid->uuid.value.uuid16)
+			if (uuid16[i] == uuid->value.uuid16)
 				break;
 
 		if (i < uuid_count)
 			continue;
 
-		uuid16[uuid_count++] = uuid->uuid.value.uuid16;
-		eir_len += sizeof(uint16_t);
+		uuid16[uuid_count++] = uuid->value.uuid16;
+		eir_optional_len += sizeof(uint16_t);
 	}
 
 	if (uuid_count > 0) {
@@ -315,7 +443,7 @@ void eir_create(const char *name, int8_t tx_power, uint16_t did_vendor,
 		ptr[1] = truncated ? EIR_UUID16_SOME : EIR_UUID16_ALL;
 
 		ptr += 2;
-		eir_len += 2;
+		eir_optional_len += 2;
 
 		for (i = 0; i < uuid_count; i++) {
 			*ptr++ = (uuid16[i] & 0x00ff);
@@ -324,6 +452,13 @@ void eir_create(const char *name, int8_t tx_power, uint16_t did_vendor,
 	}
 
 	/* Group all UUID128 types */
-	if (eir_len <= HCI_MAX_EIR_LENGTH - 2)
-		eir_generate_uuid128(uuids, ptr, &eir_len);
+	if (eir_optional_len <= HCI_MAX_EIR_LENGTH - 2)
+		eir_generate_uuid128(uuids, ptr, &eir_optional_len);
+
+	eir_total_len += eir_optional_len;
+
+	/* store total length */
+	bt_put_le16(eir_total_len, data);
+
+	return eir_total_len;
 }

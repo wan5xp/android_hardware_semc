@@ -27,7 +27,6 @@
 #include <config.h>
 #endif
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <errno.h>
 #include <fcntl.h>
@@ -42,16 +41,12 @@
 #include <sys/poll.h>
 #include <sys/param.h>
 #include <sys/ioctl.h>
-#include <sys/socket.h>
-#include <sys/uio.h>
 
 #include <bluetooth/bluetooth.h>
 #include <bluetooth/hci.h>
 #include <bluetooth/hci_lib.h>
 
 #include "hciattach.h"
-
-#include "ppoll.h"
 
 struct uart_t {
 	char *type;
@@ -68,6 +63,7 @@ struct uart_t {
 };
 
 #define FLOW_CTL	0x0001
+#define AMP_DEV		0x0002
 #define ENABLE_PM	1
 #define DISABLE_PM	0
 
@@ -130,6 +126,10 @@ static int uart_speed(int s)
 #ifdef B3500000
 	case 3500000:
 		return B3500000;
+#endif
+#ifdef B3710000
+	case 3710000
+		return B3710000;
 #endif
 #ifdef B4000000
 	case 4000000:
@@ -294,7 +294,7 @@ static int digi(int fd, struct uart_t *u, struct termios *ti)
 
 static int texas(int fd, struct uart_t *u, struct termios *ti)
 {
-	return texas_init(fd, ti);
+	return texas_init(fd, &u->speed, ti);
 }
 
 static int texas2(int fd, struct uart_t *u, struct termios *ti)
@@ -320,6 +320,11 @@ static int ath3k_pm(int fd, struct uart_t *u, struct termios *ti)
 static int qualcomm(int fd, struct uart_t *u, struct termios *ti)
 {
 	return qualcomm_init(fd, u->speed, ti, u->bdaddr);
+}
+
+static int intel(int fd, struct uart_t *u, struct termios *ti)
+{
+	return intel_init(fd, u->init_speed, &u->speed, ti);
 }
 
 static int read_check(int fd, void *buf, int count)
@@ -778,12 +783,12 @@ static int swave(int fd, struct uart_t *u, struct termios *ti)
 	nanosleep(&tm, NULL);
 
 	// now the uart baud rate on the silicon wave module is set and effective.
-	// change our own baud rate as well. Then there is a reset event comming in
+	// change our own baud rate as well. Then there is a reset event coming in
  	// on the *new* baud rate. This is *undocumented*! The packet looks like this:
 	// 04 FF 01 0B (which would make that a confirmation of 0x0B = "Param
 	// subcommand class". So: change to new baud rate, read with timeout, parse
 	// data, error handling. BTW: all param access in Silicon Wave is done this way.
-	// Maybe this code would belong in a seperate file, or at least code reuse...
+	// Maybe this code would belong in a separate file, or at least code reuse...
 
 	return 0;
 }
@@ -1137,6 +1142,18 @@ struct uart_t uart[] = {
 	{ "qualcomm",   0x0000, 0x0000, HCI_UART_H4,   115200, 115200,
 			FLOW_CTL, DISABLE_PM, NULL, qualcomm, NULL },
 
+	/* Intel Bluetooth Module */
+	{ "intel",      0x0000, 0x0000, HCI_UART_H4,   115200, 115200,
+			FLOW_CTL, DISABLE_PM, NULL, intel, NULL },
+
+	/* Three-wire UART */
+	{ "3wire",      0x0000, 0x0000, HCI_UART_3WIRE, 115200, 115200,
+			0, DISABLE_PM, NULL, NULL, NULL },
+
+	/* AMP controller UART */
+	{ "amp",	0x0000, 0x0000, HCI_UART_H4, 115200, 115200,
+			AMP_DEV, DISABLE_PM, NULL, NULL, NULL },
+
 	{ NULL, 0 }
 };
 
@@ -1169,6 +1186,9 @@ static int init_uart(char *dev, struct uart_t *u, int send_break, int raw)
 
 	if (raw)
 		flags |= 1 << HCI_UART_RAW_DEVICE;
+
+	if (u->flags & AMP_DEV)
+		flags |= 1 << HCI_UART_CREATE_AMP;
 
 	fd = open(dev, O_RDWR | O_NOCTTY);
 	if (fd < 0) {

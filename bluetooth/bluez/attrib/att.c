@@ -22,15 +22,19 @@
  *
  */
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
 #include <errno.h>
 #include <stdint.h>
 #include <stdlib.h>
 
 #include <bluetooth/bluetooth.h>
-#include <bluetooth/uuid.h>
 
 #include <glib.h>
 
+#include "lib/uuid.h"
 #include "att.h"
 
 const char *att_ecode2str(uint8_t status)
@@ -39,7 +43,7 @@ const char *att_ecode2str(uint8_t status)
 	case ATT_ECODE_INVALID_HANDLE:
 		return "Invalid handle";
 	case ATT_ECODE_READ_NOT_PERM:
-		return "Atribute can't be read";
+		return "Attribute can't be read";
 	case ATT_ECODE_WRITE_NOT_PERM:
 		return "Attribute can't be written";
 	case ATT_ECODE_INVALID_PDU:
@@ -72,6 +76,10 @@ const char *att_ecode2str(uint8_t status)
 		return "Insufficient Resources to complete the request";
 	case ATT_ECODE_IO:
 		return "Internal application error: I/O";
+	case ATT_ECODE_TIMEOUT:
+		return "A timeout occured";
+	case ATT_ECODE_ABORTED:
+		return "The operation was aborted";
 	default:
 		return "Unexpected error code";
 	}
@@ -97,6 +105,9 @@ struct att_data_list *att_data_list_alloc(uint16_t num, uint16_t len)
 	struct att_data_list *list;
 	int i;
 
+	if (len > UINT8_MAX)
+		return NULL;
+
 	list = g_new0(struct att_data_list, 1);
 	list->len = len;
 	list->num = num;
@@ -110,9 +121,9 @@ struct att_data_list *att_data_list_alloc(uint16_t num, uint16_t len)
 }
 
 uint16_t enc_read_by_grp_req(uint16_t start, uint16_t end, bt_uuid_t *uuid,
-							uint8_t *pdu, int len)
+						uint8_t *pdu, size_t len)
 {
-	const uint16_t min_len = sizeof(pdu[0]) + sizeof(start) + sizeof(end);
+	uint16_t min_len = sizeof(pdu[0]) + sizeof(start) + sizeof(end);
 	uint16_t length;
 
 	if (!uuid)
@@ -137,10 +148,10 @@ uint16_t enc_read_by_grp_req(uint16_t start, uint16_t end, bt_uuid_t *uuid,
 	return min_len + length;
 }
 
-uint16_t dec_read_by_grp_req(const uint8_t *pdu, int len, uint16_t *start,
+uint16_t dec_read_by_grp_req(const uint8_t *pdu, size_t len, uint16_t *start,
 						uint16_t *end, bt_uuid_t *uuid)
 {
-	const uint16_t min_len = sizeof(pdu[0]) + sizeof(*start) + sizeof(*end);
+	const size_t min_len = sizeof(pdu[0]) + sizeof(*start) + sizeof(*end);
 
 	if (pdu == NULL)
 		return 0;
@@ -165,7 +176,7 @@ uint16_t dec_read_by_grp_req(const uint8_t *pdu, int len, uint16_t *start,
 }
 
 uint16_t enc_read_by_grp_resp(struct att_data_list *list, uint8_t *pdu,
-								int len)
+								size_t len)
 {
 	int i;
 	uint16_t w;
@@ -174,7 +185,7 @@ uint16_t enc_read_by_grp_resp(struct att_data_list *list, uint8_t *pdu,
 	if (list == NULL)
 		return 0;
 
-	if (len < list->len + 2)
+	if (len < list->len + sizeof(uint8_t) * 2)
 		return 0;
 
 	pdu[0] = ATT_OP_READ_BY_GROUP_RESP;
@@ -191,7 +202,7 @@ uint16_t enc_read_by_grp_resp(struct att_data_list *list, uint8_t *pdu,
 	return w;
 }
 
-struct att_data_list *dec_read_by_grp_resp(const uint8_t *pdu, int len)
+struct att_data_list *dec_read_by_grp_resp(const uint8_t *pdu, size_t len)
 {
 	struct att_data_list *list;
 	const uint8_t *ptr;
@@ -204,6 +215,8 @@ struct att_data_list *dec_read_by_grp_resp(const uint8_t *pdu, int len)
 	elen = pdu[1];
 	num = (len - 2) / elen;
 	list = att_data_list_alloc(num, elen);
+	if (list == NULL)
+		return NULL;
 
 	ptr = &pdu[2];
 
@@ -216,7 +229,8 @@ struct att_data_list *dec_read_by_grp_resp(const uint8_t *pdu, int len)
 }
 
 uint16_t enc_find_by_type_req(uint16_t start, uint16_t end, bt_uuid_t *uuid,
-			const uint8_t *value, int vlen, uint8_t *pdu, int len)
+					const uint8_t *value, size_t vlen,
+					uint8_t *pdu, size_t len)
 {
 	uint16_t min_len = sizeof(pdu[0]) + sizeof(start) + sizeof(end) +
 							sizeof(uint16_t);
@@ -249,10 +263,11 @@ uint16_t enc_find_by_type_req(uint16_t start, uint16_t end, bt_uuid_t *uuid,
 	return min_len;
 }
 
-uint16_t dec_find_by_type_req(const uint8_t *pdu, int len, uint16_t *start,
-		uint16_t *end, bt_uuid_t *uuid, uint8_t *value, int *vlen)
+uint16_t dec_find_by_type_req(const uint8_t *pdu, size_t len, uint16_t *start,
+						uint16_t *end, bt_uuid_t *uuid,
+						uint8_t *value, size_t *vlen)
 {
-	int valuelen;
+	size_t valuelen;
 	uint16_t min_len = sizeof(pdu[0]) + sizeof(*start) +
 						sizeof(*end) + sizeof(uint16_t);
 
@@ -289,7 +304,7 @@ uint16_t dec_find_by_type_req(const uint8_t *pdu, int len, uint16_t *start,
 	return len;
 }
 
-uint16_t enc_find_by_type_resp(GSList *matches, uint8_t *pdu, int len)
+uint16_t enc_find_by_type_resp(GSList *matches, uint8_t *pdu, size_t len)
 {
 	GSList *l;
 	uint16_t offset;
@@ -299,8 +314,9 @@ uint16_t enc_find_by_type_resp(GSList *matches, uint8_t *pdu, int len)
 
 	pdu[0] = ATT_OP_FIND_BY_TYPE_RESP;
 
-	for (l = matches, offset = 1; l && len >= (offset + 4);
-					l = l->next, offset += 4) {
+	for (l = matches, offset = 1;
+				l && len >= (offset + sizeof(uint16_t) * 2);
+				l = l->next, offset += sizeof(uint16_t) * 2) {
 		struct att_range *range = l->data;
 
 		att_put_u16(range->start, &pdu[offset]);
@@ -310,11 +326,11 @@ uint16_t enc_find_by_type_resp(GSList *matches, uint8_t *pdu, int len)
 	return offset;
 }
 
-GSList *dec_find_by_type_resp(const uint8_t *pdu, int len)
+GSList *dec_find_by_type_resp(const uint8_t *pdu, size_t len)
 {
 	struct att_range *range;
 	GSList *matches;
-	int offset;
+	off_t offset;
 
 	if (pdu == NULL || len < 5)
 		return NULL;
@@ -322,7 +338,9 @@ GSList *dec_find_by_type_resp(const uint8_t *pdu, int len)
 	if (pdu[0] != ATT_OP_FIND_BY_TYPE_RESP)
 		return NULL;
 
-	for (offset = 1, matches = NULL; len >= (offset + 4); offset += 4) {
+	for (offset = 1, matches = NULL;
+				len >= (offset + sizeof(uint16_t) * 2);
+				offset += sizeof(uint16_t) * 2) {
 		range = g_new0(struct att_range, 1);
 		range->start = att_get_u16(&pdu[offset]);
 		range->end = att_get_u16(&pdu[offset + 2]);
@@ -334,9 +352,9 @@ GSList *dec_find_by_type_resp(const uint8_t *pdu, int len)
 }
 
 uint16_t enc_read_by_type_req(uint16_t start, uint16_t end, bt_uuid_t *uuid,
-							uint8_t *pdu, int len)
+						uint8_t *pdu, size_t len)
 {
-	const uint16_t min_len = sizeof(pdu[0]) + sizeof(start) + sizeof(end);
+	uint16_t min_len = sizeof(pdu[0]) + sizeof(start) + sizeof(end);
 	uint16_t length;
 
 	if (!uuid)
@@ -361,10 +379,10 @@ uint16_t enc_read_by_type_req(uint16_t start, uint16_t end, bt_uuid_t *uuid,
 	return min_len + length;
 }
 
-uint16_t dec_read_by_type_req(const uint8_t *pdu, int len, uint16_t *start,
+uint16_t dec_read_by_type_req(const uint8_t *pdu, size_t len, uint16_t *start,
 						uint16_t *end, bt_uuid_t *uuid)
 {
-	const uint16_t min_len = sizeof(pdu[0]) + sizeof(*start) + sizeof(*end);
+	const size_t min_len = sizeof(pdu[0]) + sizeof(*start) + sizeof(*end);
 
 	if (pdu == NULL)
 		return 0;
@@ -389,10 +407,11 @@ uint16_t dec_read_by_type_req(const uint8_t *pdu, int len, uint16_t *start,
 	return len;
 }
 
-uint16_t enc_read_by_type_resp(struct att_data_list *list, uint8_t *pdu, int len)
+uint16_t enc_read_by_type_resp(struct att_data_list *list, uint8_t *pdu,
+								size_t len)
 {
 	uint8_t *ptr;
-	int i, w, l;
+	size_t i, w, l;
 
 	if (list == NULL)
 		return 0;
@@ -415,7 +434,7 @@ uint16_t enc_read_by_type_resp(struct att_data_list *list, uint8_t *pdu, int len
 	return w;
 }
 
-struct att_data_list *dec_read_by_type_resp(const uint8_t *pdu, int len)
+struct att_data_list *dec_read_by_type_resp(const uint8_t *pdu, size_t len)
 {
 	struct att_data_list *list;
 	const uint8_t *ptr;
@@ -428,6 +447,8 @@ struct att_data_list *dec_read_by_type_resp(const uint8_t *pdu, int len)
 	elen = pdu[1];
 	num = (len - 2) / elen;
 	list = att_data_list_alloc(num, elen);
+	if (list == NULL)
+		return NULL;
 
 	ptr = &pdu[2];
 
@@ -439,8 +460,8 @@ struct att_data_list *dec_read_by_type_resp(const uint8_t *pdu, int len)
 	return list;
 }
 
-uint16_t enc_write_cmd(uint16_t handle, const uint8_t *value, int vlen,
-							uint8_t *pdu, int len)
+uint16_t enc_write_cmd(uint16_t handle, const uint8_t *value, size_t vlen,
+						uint8_t *pdu, size_t len)
 {
 	const uint16_t min_len = sizeof(pdu[0]) + sizeof(handle);
 
@@ -464,8 +485,8 @@ uint16_t enc_write_cmd(uint16_t handle, const uint8_t *value, int vlen,
 	return min_len;
 }
 
-uint16_t dec_write_cmd(const uint8_t *pdu, int len, uint16_t *handle,
-						uint8_t *value, int *vlen)
+uint16_t dec_write_cmd(const uint8_t *pdu, size_t len, uint16_t *handle,
+						uint8_t *value, size_t *vlen)
 {
 	const uint16_t min_len = sizeof(pdu[0]) + sizeof(*handle);
 
@@ -488,8 +509,8 @@ uint16_t dec_write_cmd(const uint8_t *pdu, int len, uint16_t *handle,
 	return len;
 }
 
-uint16_t enc_write_req(uint16_t handle, const uint8_t *value, int vlen,
-							uint8_t *pdu, int len)
+uint16_t enc_write_req(uint16_t handle, const uint8_t *value, size_t vlen,
+						uint8_t *pdu, size_t len)
 {
 	const uint16_t min_len = sizeof(pdu[0]) + sizeof(handle);
 
@@ -513,8 +534,8 @@ uint16_t enc_write_req(uint16_t handle, const uint8_t *value, int vlen,
 	return min_len;
 }
 
-uint16_t dec_write_req(const uint8_t *pdu, int len, uint16_t *handle,
-						uint8_t *value, int *vlen)
+uint16_t dec_write_req(const uint8_t *pdu, size_t len, uint16_t *handle,
+						uint8_t *value, size_t *vlen)
 {
 	const uint16_t min_len = sizeof(pdu[0]) + sizeof(*handle);
 
@@ -538,7 +559,7 @@ uint16_t dec_write_req(const uint8_t *pdu, int len, uint16_t *handle,
 	return len;
 }
 
-uint16_t enc_write_resp(uint8_t *pdu, int len)
+uint16_t enc_write_resp(uint8_t *pdu)
 {
 	if (pdu == NULL)
 		return 0;
@@ -548,7 +569,7 @@ uint16_t enc_write_resp(uint8_t *pdu, int len)
 	return sizeof(pdu[0]);
 }
 
-uint16_t dec_write_resp(const uint8_t *pdu, int len)
+uint16_t dec_write_resp(const uint8_t *pdu, size_t len)
 {
 	if (pdu == NULL)
 		return 0;
@@ -559,7 +580,7 @@ uint16_t dec_write_resp(const uint8_t *pdu, int len)
 	return len;
 }
 
-uint16_t enc_read_req(uint16_t handle, uint8_t *pdu, int len)
+uint16_t enc_read_req(uint16_t handle, uint8_t *pdu, size_t len)
 {
 	const uint16_t min_len = sizeof(pdu[0]) + sizeof(handle);
 
@@ -576,7 +597,7 @@ uint16_t enc_read_req(uint16_t handle, uint8_t *pdu, int len)
 }
 
 uint16_t enc_read_blob_req(uint16_t handle, uint16_t offset, uint8_t *pdu,
-									int len)
+								size_t len)
 {
 	const uint16_t min_len = sizeof(pdu[0]) + sizeof(handle) +
 							sizeof(offset);
@@ -594,7 +615,7 @@ uint16_t enc_read_blob_req(uint16_t handle, uint16_t offset, uint8_t *pdu,
 	return min_len;
 }
 
-uint16_t dec_read_req(const uint8_t *pdu, int len, uint16_t *handle)
+uint16_t dec_read_req(const uint8_t *pdu, size_t len, uint16_t *handle)
 {
 	const uint16_t min_len = sizeof(pdu[0]) + sizeof(*handle);
 
@@ -615,7 +636,7 @@ uint16_t dec_read_req(const uint8_t *pdu, int len, uint16_t *handle)
 	return min_len;
 }
 
-uint16_t dec_read_blob_req(const uint8_t *pdu, int len, uint16_t *handle,
+uint16_t dec_read_blob_req(const uint8_t *pdu, size_t len, uint16_t *handle,
 							uint16_t *offset)
 {
 	const uint16_t min_len = sizeof(pdu[0]) + sizeof(*handle) +
@@ -642,7 +663,7 @@ uint16_t dec_read_blob_req(const uint8_t *pdu, int len, uint16_t *handle,
 	return min_len;
 }
 
-uint16_t enc_read_resp(uint8_t *value, int vlen, uint8_t *pdu, int len)
+uint16_t enc_read_resp(uint8_t *value, size_t vlen, uint8_t *pdu, size_t len)
 {
 	if (pdu == NULL)
 		return 0;
@@ -660,8 +681,8 @@ uint16_t enc_read_resp(uint8_t *value, int vlen, uint8_t *pdu, int len)
 	return vlen + 1;
 }
 
-uint16_t enc_read_blob_resp(uint8_t *value, int vlen, uint16_t offset,
-							uint8_t *pdu, int len)
+uint16_t enc_read_blob_resp(uint8_t *value, size_t vlen, uint16_t offset,
+						uint8_t *pdu, size_t len)
 {
 	if (pdu == NULL)
 		return 0;
@@ -677,26 +698,28 @@ uint16_t enc_read_blob_resp(uint8_t *value, int vlen, uint16_t offset,
 	return vlen + 1;
 }
 
-uint16_t dec_read_resp(const uint8_t *pdu, int len, uint8_t *value, int *vlen)
+ssize_t dec_read_resp(const uint8_t *pdu, size_t len, uint8_t *value,
+								size_t vlen)
 {
 	if (pdu == NULL)
-		return 0;
-
-	if (value == NULL || vlen == NULL)
-		return 0;
+		return -EINVAL;
 
 	if (pdu[0] != ATT_OP_READ_RESP)
-		return 0;
+		return -EINVAL;
+
+	if (value == NULL)
+		return len - 1;
+
+	if (vlen < (len - 1))
+		return -ENOBUFS;
 
 	memcpy(value, pdu + 1, len - 1);
 
-	*vlen = len - 1;
-
-	return len;
+	return len - 1;
 }
 
 uint16_t enc_error_resp(uint8_t opcode, uint16_t handle, uint8_t status,
-							uint8_t *pdu, int len)
+						uint8_t *pdu, size_t len)
 {
 	const uint16_t min_len = sizeof(pdu[0]) + sizeof(opcode) +
 						sizeof(handle) + sizeof(status);
@@ -714,7 +737,8 @@ uint16_t enc_error_resp(uint8_t opcode, uint16_t handle, uint8_t status,
 	return min_len;
 }
 
-uint16_t enc_find_info_req(uint16_t start, uint16_t end, uint8_t *pdu, int len)
+uint16_t enc_find_info_req(uint16_t start, uint16_t end, uint8_t *pdu,
+								size_t len)
 {
 	const uint16_t min_len = sizeof(pdu[0]) + sizeof(start) + sizeof(end);
 
@@ -731,7 +755,7 @@ uint16_t enc_find_info_req(uint16_t start, uint16_t end, uint8_t *pdu, int len)
 	return min_len;
 }
 
-uint16_t dec_find_info_req(const uint8_t *pdu, int len, uint16_t *start,
+uint16_t dec_find_info_req(const uint8_t *pdu, size_t len, uint16_t *start,
 								uint16_t *end)
 {
 	const uint16_t min_len = sizeof(pdu[0]) + sizeof(*start) + sizeof(*end);
@@ -755,10 +779,10 @@ uint16_t dec_find_info_req(const uint8_t *pdu, int len, uint16_t *start,
 }
 
 uint16_t enc_find_info_resp(uint8_t format, struct att_data_list *list,
-							uint8_t *pdu, int len)
+						uint8_t *pdu, size_t len)
 {
 	uint8_t *ptr;
-	int i, w;
+	size_t i, w;
 
 	if (pdu == NULL)
 		return 0;
@@ -766,7 +790,7 @@ uint16_t enc_find_info_resp(uint8_t format, struct att_data_list *list,
 	if (list == NULL)
 		return 0;
 
-	if (len < list->len + 2)
+	if (len < list->len + sizeof(uint8_t) * 2)
 		return 0;
 
 	pdu[0] = ATT_OP_FIND_INFO_RESP;
@@ -782,7 +806,7 @@ uint16_t enc_find_info_resp(uint8_t format, struct att_data_list *list,
 	return w;
 }
 
-struct att_data_list *dec_find_info_resp(const uint8_t *pdu, int len,
+struct att_data_list *dec_find_info_resp(const uint8_t *pdu, size_t len,
 							uint8_t *format)
 {
 	struct att_data_list *list;
@@ -811,6 +835,8 @@ struct att_data_list *dec_find_info_resp(const uint8_t *pdu, int len,
 	ptr = (void *) &pdu[2];
 
 	list = att_data_list_alloc(num, elen);
+	if (list == NULL)
+		return NULL;
 
 	for (i = 0; i < num; i++) {
 		memcpy(list->data[i], ptr, list->len);
@@ -820,65 +846,68 @@ struct att_data_list *dec_find_info_resp(const uint8_t *pdu, int len,
 	return list;
 }
 
-uint16_t enc_notification(struct attribute *a, uint8_t *pdu, int len)
+uint16_t enc_notification(uint16_t handle, uint8_t *value, size_t vlen,
+						uint8_t *pdu, size_t len)
 {
 	const uint16_t min_len = sizeof(pdu[0]) + sizeof(uint16_t);
 
 	if (pdu == NULL)
 		return 0;
 
-	if (len < (a->len + min_len))
+	if (len < (vlen + min_len))
 		return 0;
 
 	pdu[0] = ATT_OP_HANDLE_NOTIFY;
-	att_put_u16(a->handle, &pdu[1]);
-	memcpy(&pdu[3], a->data, a->len);
+	att_put_u16(handle, &pdu[1]);
+	memcpy(&pdu[3], value, vlen);
 
-	return a->len + min_len;
+	return vlen + min_len;
 }
 
-uint16_t enc_indication(struct attribute *a, uint8_t *pdu, int len)
+uint16_t enc_indication(uint16_t handle, uint8_t *value, size_t vlen,
+						uint8_t *pdu, size_t len)
 {
 	const uint16_t min_len = sizeof(pdu[0]) + sizeof(uint16_t);
 
 	if (pdu == NULL)
 		return 0;
 
-	if (len < (a->len + min_len))
+	if (len < (vlen + min_len))
 		return 0;
 
 	pdu[0] = ATT_OP_HANDLE_IND;
-	att_put_u16(a->handle, &pdu[1]);
-	memcpy(&pdu[3], a->data, a->len);
+	att_put_u16(handle, &pdu[1]);
+	memcpy(&pdu[3], value, vlen);
 
-	return a->len + min_len;
+	return vlen + min_len;
 }
 
-struct attribute *dec_indication(const uint8_t *pdu, int len)
+uint16_t dec_indication(const uint8_t *pdu, size_t len, uint16_t *handle,
+						uint8_t *value, size_t vlen)
 {
 	const uint16_t min_len = sizeof(pdu[0]) + sizeof(uint16_t);
-
-	struct attribute *a;
+	uint16_t dlen;
 
 	if (pdu == NULL)
-		return NULL;
+		return 0;
 
 	if (pdu[0] != ATT_OP_HANDLE_IND)
-		return NULL;
+		return 0;
 
 	if (len < min_len)
-		return NULL;
+		return 0;
 
-	a = g_malloc0(sizeof(struct attribute) + len - min_len);
-	a->len = len - min_len;
+	dlen = MIN(len - min_len, vlen);
 
-	a->handle = att_get_u16(&pdu[1]);
-	memcpy(a->data, &pdu[3], a->len);
+	if (handle)
+		*handle = att_get_u16(&pdu[1]);
 
-	return a;
+	memcpy(value, &pdu[3], dlen);
+
+	return dlen;
 }
 
-uint16_t enc_confirmation(uint8_t *pdu, int len)
+uint16_t enc_confirmation(uint8_t *pdu, size_t len)
 {
 	const uint16_t min_len = sizeof(pdu[0]);
 
@@ -893,7 +922,7 @@ uint16_t enc_confirmation(uint8_t *pdu, int len)
 	return min_len;
 }
 
-uint16_t enc_mtu_req(uint16_t mtu, uint8_t *pdu, int len)
+uint16_t enc_mtu_req(uint16_t mtu, uint8_t *pdu, size_t len)
 {
 	const uint16_t min_len = sizeof(pdu[0]) + sizeof(mtu);
 
@@ -909,7 +938,7 @@ uint16_t enc_mtu_req(uint16_t mtu, uint8_t *pdu, int len)
 	return min_len;
 }
 
-uint16_t dec_mtu_req(const uint8_t *pdu, int len, uint16_t *mtu)
+uint16_t dec_mtu_req(const uint8_t *pdu, size_t len, uint16_t *mtu)
 {
 	const uint16_t min_len = sizeof(pdu[0]) + sizeof(*mtu);
 
@@ -930,7 +959,7 @@ uint16_t dec_mtu_req(const uint8_t *pdu, int len, uint16_t *mtu)
 	return min_len;
 }
 
-uint16_t enc_mtu_resp(uint16_t mtu, uint8_t *pdu, int len)
+uint16_t enc_mtu_resp(uint16_t mtu, uint8_t *pdu, size_t len)
 {
 	const uint16_t min_len = sizeof(pdu[0]) + sizeof(mtu);
 
@@ -946,7 +975,7 @@ uint16_t enc_mtu_resp(uint16_t mtu, uint8_t *pdu, int len)
 	return min_len;
 }
 
-uint16_t dec_mtu_resp(const uint8_t *pdu, int len, uint16_t *mtu)
+uint16_t dec_mtu_resp(const uint8_t *pdu, size_t len, uint16_t *mtu)
 {
 	const uint16_t min_len = sizeof(pdu[0]) + sizeof(*mtu);
 
@@ -965,4 +994,181 @@ uint16_t dec_mtu_resp(const uint8_t *pdu, int len, uint16_t *mtu)
 	*mtu = att_get_u16(&pdu[1]);
 
 	return min_len;
+}
+
+uint16_t enc_prep_write_req(uint16_t handle, uint16_t offset,
+					const uint8_t *value, size_t vlen,
+					uint8_t *pdu, size_t len)
+{
+	const uint16_t min_len = sizeof(pdu[0]) + sizeof(handle) +
+								sizeof(offset);
+
+	if (pdu == NULL)
+		return 0;
+
+	if (len < min_len)
+		return 0;
+
+	if (vlen > len - min_len)
+		vlen = len - min_len;
+
+	pdu[0] = ATT_OP_PREP_WRITE_REQ;
+	att_put_u16(handle, &pdu[1]);
+	att_put_u16(offset, &pdu[3]);
+
+	if (vlen > 0) {
+		memcpy(&pdu[5], value, vlen);
+		return min_len + vlen;
+	}
+
+	return min_len;
+}
+
+uint16_t dec_prep_write_req(const uint8_t *pdu, size_t len, uint16_t *handle,
+				uint16_t *offset, uint8_t *value, size_t *vlen)
+{
+	const uint16_t min_len = sizeof(pdu[0]) + sizeof(*handle) +
+							sizeof(*offset);
+
+	if (pdu == NULL)
+		return 0;
+
+	if (handle == NULL || offset == NULL || value == NULL || vlen == NULL)
+		return 0;
+
+	if (len < min_len)
+		return 0;
+
+	if (pdu[0] != ATT_OP_PREP_WRITE_REQ)
+		return 0;
+
+	*handle = att_get_u16(&pdu[1]);
+	*offset = att_get_u16(&pdu[3]);
+
+	*vlen = len - min_len;
+	if (*vlen > 0)
+		memcpy(value, pdu + min_len, *vlen);
+
+	return len;
+}
+
+uint16_t enc_prep_write_resp(uint16_t handle, uint16_t offset,
+					const uint8_t *value, size_t vlen,
+					uint8_t *pdu, size_t len)
+{
+	const uint16_t min_len = sizeof(pdu[0]) + sizeof(handle) +
+								sizeof(offset);
+
+	if (pdu == NULL)
+		return 0;
+
+	if (len < min_len)
+		return 0;
+
+	if (vlen > len - min_len)
+		vlen = len - min_len;
+
+	pdu[0] = ATT_OP_PREP_WRITE_RESP;
+	att_put_u16(handle, &pdu[1]);
+	att_put_u16(offset, &pdu[3]);
+
+	if (vlen > 0) {
+		memcpy(&pdu[5], value, vlen);
+		return min_len + vlen;
+	}
+
+	return min_len;
+}
+
+uint16_t dec_prep_write_resp(const uint8_t *pdu, size_t len, uint16_t *handle,
+				uint16_t *offset, uint8_t *value, size_t *vlen)
+{
+	const uint16_t min_len = sizeof(pdu[0]) + sizeof(*handle) +
+								sizeof(*offset);
+
+	if (pdu == NULL)
+		return 0;
+
+	if (handle == NULL || offset == NULL || value == NULL || vlen == NULL)
+		return 0;
+
+	if (len < min_len)
+		return 0;
+
+	if (pdu[0] != ATT_OP_PREP_WRITE_REQ)
+		return 0;
+
+	*handle = att_get_u16(&pdu[1]);
+	*offset = att_get_u16(&pdu[3]);
+	*vlen = len - min_len;
+	if (*vlen > 0)
+		memcpy(value, pdu + min_len, *vlen);
+
+	return len;
+}
+
+uint16_t enc_exec_write_req(uint8_t flags, uint8_t *pdu, size_t len)
+{
+	const uint16_t min_len = sizeof(pdu[0]) + sizeof(flags);
+
+	if (pdu == NULL)
+		return 0;
+
+	if (len < min_len)
+		return 0;
+
+	if (flags > 1)
+		return 0;
+
+	pdu[0] = ATT_OP_EXEC_WRITE_REQ;
+	pdu[1] = flags;
+
+	return min_len;
+}
+
+uint16_t dec_exec_write_req(const uint8_t *pdu, size_t len, uint8_t *flags)
+{
+	const uint16_t min_len = sizeof(pdu[0]) + sizeof(*flags);
+
+	if (pdu == NULL)
+		return 0;
+
+	if (flags == NULL)
+		return 0;
+
+	if (len < min_len)
+		return 0;
+
+	if (pdu[0] != ATT_OP_EXEC_WRITE_REQ)
+		return 0;
+
+	*flags = pdu[1];
+
+	return min_len;
+}
+
+uint16_t enc_exec_write_resp(uint8_t *pdu)
+{
+	if (pdu == NULL)
+		return 0;
+
+	pdu[0] = ATT_OP_EXEC_WRITE_RESP;
+
+	return sizeof(pdu[0]);
+}
+
+uint16_t dec_exec_write_resp(const uint8_t *pdu, size_t len)
+{
+	const uint16_t min_len = sizeof(pdu[0]);
+
+	if (pdu == NULL)
+		return 0;
+
+	if (len < min_len)
+		return 0;
+
+	if (pdu[0] != ATT_OP_EXEC_WRITE_RESP)
+		return 0;
+
+	return len;
 }

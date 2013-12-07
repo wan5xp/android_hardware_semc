@@ -22,28 +22,6 @@
  *
  */
 
-/* GATT Profile Attribute types */
-#define GATT_PRIM_SVC_UUID		0x2800
-#define GATT_SND_SVC_UUID		0x2801
-#define GATT_INCLUDE_UUID		0x2802
-#define GATT_CHARAC_UUID		0x2803
-
-/* GATT Characteristic Types */
-#define GATT_CHARAC_DEVICE_NAME			0x2A00
-#define GATT_CHARAC_APPEARANCE			0x2A01
-#define GATT_CHARAC_PERIPHERAL_PRIV_FLAG	0x2A02
-#define GATT_CHARAC_RECONNECTION_ADDRESS	0x2A03
-#define GATT_CHARAC_PERIPHERAL_PREF_CONN	0x2A04
-#define GATT_CHARAC_SERVICE_CHANGED		0x2A05
-
-/* GATT Characteristic Descriptors */
-#define GATT_CHARAC_EXT_PROPER_UUID	0x2900
-#define GATT_CHARAC_USER_DESC_UUID	0x2901
-#define GATT_CLIENT_CHARAC_CFG_UUID	0x2902
-#define GATT_SERVER_CHARAC_CFG_UUID	0x2903
-#define GATT_CHARAC_FMT_UUID		0x2904
-#define GATT_CHARAC_AGREG_FMT_UUID	0x2905
-
 /* Attribute Protocol Opcodes */
 #define ATT_OP_ERROR			0x01
 #define ATT_OP_MTU_REQ			0x02
@@ -93,7 +71,9 @@
 #define ATT_ECODE_UNSUPP_GRP_TYPE		0x10
 #define ATT_ECODE_INSUFF_RESOURCES		0x11
 /* Application error */
-#define ATT_ECODE_IO				0xFF
+#define ATT_ECODE_IO				0x80
+#define ATT_ECODE_TIMEOUT			0x81
+#define ATT_ECODE_ABORTED			0x82
 
 /* Characteristic Property bit field */
 #define ATT_CHAR_PROPER_BROADCAST		0x01
@@ -105,33 +85,20 @@
 #define ATT_CHAR_PROPER_AUTH			0x40
 #define ATT_CHAR_PROPER_EXT_PROPER		0x80
 
-
-#define ATT_MAX_MTU				256
+#define ATT_MAX_VALUE_LEN			512
 #define ATT_DEFAULT_L2CAP_MTU			48
 #define ATT_DEFAULT_LE_MTU			23
 
 #define ATT_CID					4
 #define ATT_PSM					31
 
-/* Requirements for read/write operations */
-enum {
-	ATT_NONE,		/* No restrictions */
-	ATT_AUTHENTICATION,	/* Authentication required */
-	ATT_AUTHORIZATION,	/* Authorization required */
-	ATT_NOT_PERMITTED,	/* Operation not permitted */
-};
+/* Flags for Execute Write Request Operation */
+#define ATT_CANCEL_ALL_PREP_WRITES              0x00
+#define ATT_WRITE_ALL_PREP_WRITES               0x01
 
-struct attribute {
-	uint16_t handle;
-	bt_uuid_t uuid;
-	int read_reqs;
-	int write_reqs;
-	uint8_t (*read_cb)(struct attribute *a, gpointer user_data);
-	uint8_t (*write_cb)(struct attribute *a, gpointer user_data);
-	gpointer cb_user_data;
-	int len;
-	uint8_t data[0];
-};
+/* Find Information Response Formats */
+#define ATT_FIND_INFO_RESP_FMT_16BIT		0x01
+#define ATT_FIND_INFO_RESP_FMT_128BIT		0x02
 
 struct att_data_list {
 	uint16_t num;
@@ -142,19 +109,6 @@ struct att_data_list {
 struct att_range {
 	uint16_t start;
 	uint16_t end;
-};
-
-struct att_primary {
-	char uuid[MAX_LEN_UUID_STR + 1];
-	uint16_t start;
-	uint16_t end;
-};
-
-struct att_char {
-	char uuid[MAX_LEN_UUID_STR + 1];
-	uint16_t handle;
-	uint8_t properties;
-	uint16_t value_handle;
 };
 
 /* These functions do byte conversion */
@@ -251,59 +205,82 @@ void att_data_list_free(struct att_data_list *list);
 
 const char *att_ecode2str(uint8_t status);
 uint16_t enc_read_by_grp_req(uint16_t start, uint16_t end, bt_uuid_t *uuid,
-							uint8_t *pdu, int len);
-uint16_t dec_read_by_grp_req(const uint8_t *pdu, int len, uint16_t *start,
-						uint16_t *end, bt_uuid_t *uuid);
-uint16_t enc_read_by_grp_resp(struct att_data_list *list, uint8_t *pdu, int len);
+						uint8_t *pdu, size_t len);
+uint16_t dec_read_by_grp_req(const uint8_t *pdu, size_t len, uint16_t *start,
+					uint16_t *end, bt_uuid_t *uuid);
+uint16_t enc_read_by_grp_resp(struct att_data_list *list, uint8_t *pdu,
+								size_t len);
 uint16_t enc_find_by_type_req(uint16_t start, uint16_t end, bt_uuid_t *uuid,
-			const uint8_t *value, int vlen, uint8_t *pdu, int len);
-uint16_t dec_find_by_type_req(const uint8_t *pdu, int len, uint16_t *start,
-		uint16_t *end, bt_uuid_t *uuid, uint8_t *value, int *vlen);
-uint16_t enc_find_by_type_resp(GSList *ranges, uint8_t *pdu, int len);
-GSList *dec_find_by_type_resp(const uint8_t *pdu, int len);
-struct att_data_list *dec_read_by_grp_resp(const uint8_t *pdu, int len);
+				const uint8_t *value, size_t vlen, uint8_t *pdu,
+				size_t len);
+uint16_t dec_find_by_type_req(const uint8_t *pdu, size_t len, uint16_t *start,
+		uint16_t *end, bt_uuid_t *uuid, uint8_t *value, size_t *vlen);
+uint16_t enc_find_by_type_resp(GSList *ranges, uint8_t *pdu, size_t len);
+GSList *dec_find_by_type_resp(const uint8_t *pdu, size_t len);
+struct att_data_list *dec_read_by_grp_resp(const uint8_t *pdu, size_t len);
 uint16_t enc_read_by_type_req(uint16_t start, uint16_t end, bt_uuid_t *uuid,
-							uint8_t *pdu, int len);
-uint16_t dec_read_by_type_req(const uint8_t *pdu, int len, uint16_t *start,
-						uint16_t *end, bt_uuid_t *uuid);
+						uint8_t *pdu, size_t len);
+uint16_t dec_read_by_type_req(const uint8_t *pdu, size_t len, uint16_t *start,
+					uint16_t *end, bt_uuid_t *uuid);
 uint16_t enc_read_by_type_resp(struct att_data_list *list, uint8_t *pdu,
-								int len);
-uint16_t enc_write_cmd(uint16_t handle, const uint8_t *value, int vlen,
-							uint8_t *pdu, int len);
-uint16_t dec_write_cmd(const uint8_t *pdu, int len, uint16_t *handle,
-						uint8_t *value, int *vlen);
-struct att_data_list *dec_read_by_type_resp(const uint8_t *pdu, int len);
-uint16_t enc_write_req(uint16_t handle, const uint8_t *value, int vlen,
-							uint8_t *pdu, int len);
-uint16_t dec_write_req(const uint8_t *pdu, int len, uint16_t *handle,
-						uint8_t *value, int *vlen);
-uint16_t enc_write_resp(uint8_t *pdu, int len);
-uint16_t dec_write_resp(const uint8_t *pdu, int len);
-uint16_t enc_read_req(uint16_t handle, uint8_t *pdu, int len);
+								size_t len);
+uint16_t enc_write_cmd(uint16_t handle, const uint8_t *value, size_t vlen,
+						uint8_t *pdu, size_t len);
+uint16_t dec_write_cmd(const uint8_t *pdu, size_t len, uint16_t *handle,
+						uint8_t *value, size_t *vlen);
+struct att_data_list *dec_read_by_type_resp(const uint8_t *pdu, size_t len);
+uint16_t enc_write_req(uint16_t handle, const uint8_t *value, size_t vlen,
+						uint8_t *pdu, size_t len);
+uint16_t dec_write_req(const uint8_t *pdu, size_t len, uint16_t *handle,
+						uint8_t *value, size_t *vlen);
+uint16_t enc_write_resp(uint8_t *pdu);
+uint16_t dec_write_resp(const uint8_t *pdu, size_t len);
+uint16_t enc_read_req(uint16_t handle, uint8_t *pdu, size_t len);
 uint16_t enc_read_blob_req(uint16_t handle, uint16_t offset, uint8_t *pdu,
-								int len);
-uint16_t dec_read_req(const uint8_t *pdu, int len, uint16_t *handle);
-uint16_t dec_read_blob_req(const uint8_t *pdu, int len, uint16_t *handle,
+								size_t len);
+uint16_t dec_read_req(const uint8_t *pdu, size_t len, uint16_t *handle);
+uint16_t dec_read_blob_req(const uint8_t *pdu, size_t len, uint16_t *handle,
 							uint16_t *offset);
-uint16_t enc_read_resp(uint8_t *value, int vlen, uint8_t *pdu, int len);
-uint16_t enc_read_blob_resp(uint8_t *value, int vlen, uint16_t offset,
-							uint8_t *pdu, int len);
-uint16_t dec_read_resp(const uint8_t *pdu, int len, uint8_t *value, int *vlen);
+uint16_t enc_read_resp(uint8_t *value, size_t vlen, uint8_t *pdu, size_t len);
+uint16_t enc_read_blob_resp(uint8_t *value, size_t vlen, uint16_t offset,
+						uint8_t *pdu, size_t len);
+ssize_t dec_read_resp(const uint8_t *pdu, size_t len, uint8_t *value,
+								size_t vlen);
 uint16_t enc_error_resp(uint8_t opcode, uint16_t handle, uint8_t status,
-							uint8_t *pdu, int len);
-uint16_t enc_find_info_req(uint16_t start, uint16_t end, uint8_t *pdu, int len);
-uint16_t dec_find_info_req(const uint8_t *pdu, int len, uint16_t *start,
+						uint8_t *pdu, size_t len);
+uint16_t enc_find_info_req(uint16_t start, uint16_t end, uint8_t *pdu,
+								size_t len);
+uint16_t dec_find_info_req(const uint8_t *pdu, size_t len, uint16_t *start,
 								uint16_t *end);
 uint16_t enc_find_info_resp(uint8_t format, struct att_data_list *list,
-							uint8_t *pdu, int len);
-struct att_data_list *dec_find_info_resp(const uint8_t *pdu, int len,
+						uint8_t *pdu, size_t len);
+struct att_data_list *dec_find_info_resp(const uint8_t *pdu, size_t len,
 							uint8_t *format);
-uint16_t enc_notification(struct attribute *a, uint8_t *pdu, int len);
-uint16_t enc_indication(struct attribute *a, uint8_t *pdu, int len);
-struct attribute *dec_indication(const uint8_t *pdu, int len);
-uint16_t enc_confirmation(uint8_t *pdu, int len);
+uint16_t enc_notification(uint16_t handle, uint8_t *value, size_t vlen,
+						uint8_t *pdu, size_t len);
+uint16_t enc_indication(uint16_t handle, uint8_t *value, size_t vlen,
+						uint8_t *pdu, size_t len);
+uint16_t dec_indication(const uint8_t *pdu, size_t len, uint16_t *handle,
+						uint8_t *value, size_t vlen);
+uint16_t enc_confirmation(uint8_t *pdu, size_t len);
 
-uint16_t enc_mtu_req(uint16_t mtu, uint8_t *pdu, int len);
-uint16_t dec_mtu_req(const uint8_t *pdu, int len, uint16_t *mtu);
-uint16_t enc_mtu_resp(uint16_t mtu, uint8_t *pdu, int len);
-uint16_t dec_mtu_resp(const uint8_t *pdu, int len, uint16_t *mtu);
+uint16_t enc_mtu_req(uint16_t mtu, uint8_t *pdu, size_t len);
+uint16_t dec_mtu_req(const uint8_t *pdu, size_t len, uint16_t *mtu);
+uint16_t enc_mtu_resp(uint16_t mtu, uint8_t *pdu, size_t len);
+uint16_t dec_mtu_resp(const uint8_t *pdu, size_t len, uint16_t *mtu);
+
+uint16_t enc_prep_write_req(uint16_t handle, uint16_t offset,
+					const uint8_t *value, size_t vlen,
+					uint8_t *pdu, size_t len);
+uint16_t dec_prep_write_req(const uint8_t *pdu, size_t len, uint16_t *handle,
+				uint16_t *offset, uint8_t *value, size_t *vlen);
+uint16_t enc_prep_write_resp(uint16_t handle, uint16_t offset,
+					const uint8_t *value, size_t vlen,
+					uint8_t *pdu, size_t len);
+uint16_t dec_prep_write_resp(const uint8_t *pdu, size_t len, uint16_t *handle,
+						uint16_t *offset, uint8_t *value,
+						size_t *vlen);
+uint16_t enc_exec_write_req(uint8_t flags, uint8_t *pdu, size_t len);
+uint16_t dec_exec_write_req(const uint8_t *pdu, size_t len, uint8_t *flags);
+uint16_t enc_exec_write_resp(uint8_t *pdu);
+uint16_t dec_exec_write_resp(const uint8_t *pdu, size_t len);

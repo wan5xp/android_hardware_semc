@@ -1,14 +1,14 @@
 #!/usr/bin/python
 
+from __future__ import absolute_import, print_function, unicode_literals
+
 import sys
 import time
 import dbus
 from optparse import OptionParser, make_option
+import bluezutils
 
 bus = dbus.SystemBus()
-
-manager = dbus.Interface(bus.get_object("org.bluez", "/"),
-						"org.bluez.Manager")
 
 option_list = [
 		make_option("-i", "--device", action="store",
@@ -18,13 +18,9 @@ parser = OptionParser(option_list=option_list)
 
 (options, args) = parser.parse_args()
 
-if options.dev_id:
-	adapter_path = manager.FindAdapter(options.dev_id)
-else:
-	adapter_path = manager.DefaultAdapter()
-
+adapter_path = bluezutils.find_adapter(options.dev_id).object_path
 server = dbus.Interface(bus.get_object("org.bluez", adapter_path),
-						"org.bluez.NetworkServer")
+						"org.bluez.NetworkServer1")
 
 service = "nap"
 
@@ -35,13 +31,13 @@ else:
 
 server.Register(service, bridge)
 
-print "Server for %s registered for %s" % (service, bridge)
+print("Server for %s registered for %s" % (service, bridge))
 
-print "Press CTRL-C to disconnect"
+print("Press CTRL-C to disconnect")
 
 try:
 	time.sleep(1000)
-	print "Terminating connection"
+	print("Terminating connection")
 except:
 	pass
 

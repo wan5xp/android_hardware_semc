@@ -22,20 +22,40 @@
  *
  */
 
-struct uuid_info {
-	uuid_t uuid;
-	uint8_t svc_hint;
-};
+#define EIR_FLAGS                   0x01  /* flags */
+#define EIR_UUID16_SOME             0x02  /* 16-bit UUID, more available */
+#define EIR_UUID16_ALL              0x03  /* 16-bit UUID, all listed */
+#define EIR_UUID32_SOME             0x04  /* 32-bit UUID, more available */
+#define EIR_UUID32_ALL              0x05  /* 32-bit UUID, all listed */
+#define EIR_UUID128_SOME            0x06  /* 128-bit UUID, more available */
+#define EIR_UUID128_ALL             0x07  /* 128-bit UUID, all listed */
+#define EIR_NAME_SHORT              0x08  /* shortened local name */
+#define EIR_NAME_COMPLETE           0x09  /* complete local name */
+#define EIR_TX_POWER                0x0A  /* transmit power level */
+#define EIR_CLASS_OF_DEV            0x0D  /* Class of Device */
+#define EIR_SSP_HASH                0x0E  /* SSP Hash */
+#define EIR_SSP_RANDOMIZER          0x0F  /* SSP Randomizer */
+#define EIR_DEVICE_ID               0x10  /* device ID */
+#define EIR_GAP_APPEARANCE          0x19  /* GAP appearance */
 
 struct eir_data {
 	GSList *services;
 	int flags;
 	char *name;
+	uint32_t class;
+	uint16_t appearance;
 	gboolean name_complete;
+	int8_t tx_power;
+	uint8_t *hash;
+	uint8_t *randomizer;
+	bdaddr_t addr;
 };
 
 void eir_data_free(struct eir_data *eir);
-int eir_parse(struct eir_data *eir, uint8_t *eir_data);
-void eir_create(const char *name, int8_t tx_power, uint16_t did_vendor,
-			uint16_t did_product, uint16_t did_version,
-			GSList *uuids, uint8_t *data);
+int eir_parse(struct eir_data *eir, const uint8_t *eir_data, uint8_t eir_len);
+int eir_parse_oob(struct eir_data *eir, uint8_t *eir_data, uint16_t eir_len);
+int eir_create_oob(const bdaddr_t *addr, const char *name, uint32_t cod,
+			const uint8_t *hash, const uint8_t *randomizer,
+			uint16_t did_vendor, uint16_t did_product,
+			uint16_t did_version, uint16_t did_source,
+			sdp_list_t *uuids, uint8_t *data);

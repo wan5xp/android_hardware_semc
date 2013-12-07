@@ -12,7 +12,7 @@ Fabrizio Gennari <fabrizio.gennari@philips.com>
 Brad Midgley <bmidgley@xmission.com>
 Henryk Ploetz <henryk@ploetzli.ch>
 Philip Blundell <pb@nexus.co.uk>
-Johan Hedberg <johan.hedberg@nokia.com>
+Johan Hedberg <johan.hedberg@intel.com>
 Claudio Takahasi <claudio.takahasi@indt.org.br>
 Eduardo Rocha <eduardo.rocha@indt.org.br>
 Denis Kenzior <denis.kenzior@trolltech.com>
@@ -35,7 +35,7 @@ Pekka Pessi <pekka.pessi@nokia.com>
 Siarhei Siamashka <siarhei.siamashka@nokia.com>
 Nick Pelly <npelly@google.com>
 Lennart Poettering <lennart@poettering.net>
-Gustavo F. Padovan <padovan@profusion.mobi>
+Gustavo Padovan <gustavo@padovan.org>
 Marc-Andre Lureau <marc-andre.lureau@nokia.com>
 Bea Lam <bea.lam@nokia.com>
 Zygo Blaxell <zygo.blaxell@xandros.com>
@@ -54,3 +54,29 @@ Anderson Briglia <anderson.briglia@openbossa.org>
 Anderson Lizardo <anderson.lizardo@openbossa.org>
 Bruna Moreira <bruna.moreira@openbossa.org>
 Brian Gix <bgix@codeaurora.org>
+Andre Guedes <andre.guedes@openbossa.org>
+Sheldon Demario <sheldon.demario@openbossa.org>
+Lucas De Marchi <lucas.demarchi@profusion.mobi>
+Szymon Janc <szymon.janc@tieto.com>
+Syam Sidhardhan <s.syam@samsung.com>
+Paulo Alcantara <pcacjr@gmail.com>
+Jefferson Delfes <jefferson.delfes@openbossa.org>
+Andrzej Kaczmarek <andrzej.kaczmarek@tieto.com>
+Eder Ruiz Maria <eder.ruiz@openbossa.org>
+Mikel Astiz <mikel.astiz@bmw-carit.de>
+Chan-yeol Park <chanyeol.park@samsung.com>
+João Paulo Rechi Vita <jprvita@gmail.com>
+Larry Junior <larry.junior@openbossa.org>
+Raymond Liu <raymond.liu@intel.com>
+Radoslaw Jablonski <ext-jablonski.radoslaw@nokia.com>
+Rafal Michalski <michalski.raf@gmail.com>
+Dmitriy Paliy <dmitriy.paliy@nokia.com>
+Bartosz Szatkowski <bulislaw@linux.com>
+Lukasz Pawlik <lucas.pawlik@gmail.com>
+Slawomir Bochenski <lkslawek@gmail.com>
+Wayne Lee <waynelee@qualcomm.com>
+Ricky Yuen <ryuen@qualcomm.com>
+Takashi Sasai <sasai@sm.sony.co.jp>
+Andre Dieb Martins <andre.dieb@signove.com>
+Cristian Rodríguez <crrodriguez@opensuse.org>
+Alex Deymo <deymo@chromium.org>

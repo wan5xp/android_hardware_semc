@@ -28,13 +28,10 @@
 #include <config.h>
 #endif
 
-#include <stdio.h>
 #include <errno.h>
 #include <unistd.h>
 #include <stdlib.h>
 #include <sys/stat.h>
-#include <sys/socket.h>
-#include <cutils/sockets.h>
 
 #include <bluetooth/bluetooth.h>
 #include <bluetooth/l2cap.h>
@@ -42,7 +39,6 @@
 #include <bluetooth/sdp_lib.h>
 
 #include <sys/un.h>
-#include <netinet/in.h>
 
 #include <glib.h>
 
@@ -123,43 +119,33 @@ static int init_server(uint16_t mtu, int master, int compat)
 		unix_sock = -1;
 		return 0;
 	}
-#if 0
-        /* Create local Unix socket */
-        unix_sock = socket(PF_UNIX, SOCK_STREAM, 0);
-        if (unix_sock < 0) {
-                error("opening UNIX socket: %s", strerror(errno));
-                return -1;
-        }
 
-        memset(&unaddr, 0, sizeof(unaddr));
-        unaddr.sun_family = AF_UNIX;
-        strcpy(unaddr.sun_path, SDP_UNIX_PATH);
+	/* Create local Unix socket */
+	unix_sock = socket(PF_UNIX, SOCK_STREAM, 0);
+	if (unix_sock < 0) {
+		error("opening UNIX socket: %s", strerror(errno));
+		return -1;
+	}
 
-        unlink(unaddr.sun_path);
+	memset(&unaddr, 0, sizeof(unaddr));
+	unaddr.sun_family = AF_UNIX;
+	strcpy(unaddr.sun_path, SDP_UNIX_PATH);
 
-        if (bind(unix_sock, (struct sockaddr *) &unaddr, sizeof(unaddr)) < 0) {
-                error("binding UNIX socket: %s", strerror(errno));
-                return -1;
-        }
+	unlink(unaddr.sun_path);
 
-        listen(unix_sock, 5);
+	if (bind(unix_sock, (struct sockaddr *) &unaddr, sizeof(unaddr)) < 0) {
+		error("binding UNIX socket: %s", strerror(errno));
+		return -1;
+	}
 
-        chmod(SDP_UNIX_PATH, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
-#else
-        unix_sock = android_get_control_socket("bluetooth");
-        if (unix_sock < 0) {
-                error("Unable to get the control socket for 'bluetooth'");
-                return -1;
-        }
+	if (listen(unix_sock, 5) < 0) {
+		error("listen UNIX socket: %s", strerror(errno));
+		return -1;
+	}
 
-        if (listen(unix_sock, 5)) {
-                error("Listening on local socket failed: %s", strerror(errno));
-                return -1;
-        }
+	chmod(SDP_UNIX_PATH, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP);
 
-        info("Got Unix socket fd '%d' from environment", unix_sock);
-#endif
-        return 0;
+	return 0;
 }
 
 static gboolean io_session_event(GIOChannel *chan, GIOCondition cond, gpointer data)
@@ -179,7 +165,7 @@ static gboolean io_session_event(GIOChannel *chan, GIOCondition cond, gpointer d
 	}
 
 	len = recv(sk, &hdr, sizeof(sdp_pdu_hdr_t), MSG_PEEK);
-	if (len <= 0) {
+	if (len != sizeof(sdp_pdu_hdr_t)) {
 		sdp_svcdb_collect_all(sk);
 		return FALSE;
 	}
@@ -190,7 +176,7 @@ static gboolean io_session_event(GIOChannel *chan, GIOCondition cond, gpointer d
 		return TRUE;
 
 	len = recv(sk, buf, size, 0);
-	if (len <= 0) {
+	if (len != size) {
 		sdp_svcdb_collect_all(sk);
 		free(buf);
 		return FALSE;
@@ -238,7 +224,7 @@ static gboolean io_accept_event(GIOChannel *chan, GIOCondition cond, gpointer da
 	return TRUE;
 }
 
-int start_sdp_server(uint16_t mtu, const char *did, uint32_t flags)
+int start_sdp_server(uint16_t mtu, uint32_t flags)
 {
 	int compat = flags & SDP_SERVER_COMPAT;
 	int master = flags & SDP_SERVER_MASTER;
@@ -249,21 +235,6 @@ int start_sdp_server(uint16_t mtu, const char *did, uint32_t flags)
 	if (init_server(mtu, master, compat) < 0) {
 		error("Server initialization failed");
 		return -1;
-	}
-
-	if (did && strlen(did) > 0) {
-		const char *ptr = did;
-		uint16_t vid = 0x0000, pid = 0x0000, ver = 0x0000;
-
-		vid = (uint16_t) strtol(ptr, NULL, 16);
-		ptr = strchr(ptr, ':');
-		if (ptr) {
-			pid = (uint16_t) strtol(ptr + 1, NULL, 16);
-			ptr = strchr(ptr + 1, ':');
-			if (ptr)
-				ver = (uint16_t) strtol(ptr + 1, NULL, 16);
-			register_device_id(vid, pid, ver);
-		}
 	}
 
 	io = g_io_channel_unix_new(l2cap_sock);

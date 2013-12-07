@@ -33,7 +33,8 @@
 
 #include <glib.h>
 
-#include "btio.h"
+#include <btio/btio.h>
+#include "log.h"
 #include "sdp-client.h"
 
 /* Number of seconds to keep a sdp_session_t in the cache */
@@ -195,30 +196,23 @@ static gboolean search_process_cb(GIOChannel *chan, GIOCondition cond,
 							gpointer user_data)
 {
 	struct search_context *ctxt = user_data;
-	int err = 0;
 
 	if (cond & (G_IO_ERR | G_IO_HUP | G_IO_NVAL)) {
-		err = EIO;
-		goto failed;
-	}
-
-	if (sdp_process(ctxt->session) < 0)
-		goto failed;
-
-	return TRUE;
-
-failed:
-	if (err) {
 		sdp_close(ctxt->session);
 		ctxt->session = NULL;
 
 		if (ctxt->cb)
-			ctxt->cb(NULL, err, ctxt->user_data);
+			ctxt->cb(NULL, -EIO, ctxt->user_data);
 
 		search_context_cleanup(ctxt);
+		return FALSE;
 	}
 
-	return FALSE;
+	/* If sdp_process fails it calls search_completed_cb */
+	if (sdp_process(ctxt->session) < 0)
+		return FALSE;
+
+	return TRUE;
 }
 
 static gboolean connect_watch(GIOChannel *chan, GIOCondition cond,
@@ -228,22 +222,22 @@ static gboolean connect_watch(GIOChannel *chan, GIOCondition cond,
 	sdp_list_t *search, *attrids;
 	uint32_t range = 0x0000ffff;
 	socklen_t len;
-	int sk, err = 0;
+	int sk, err, sk_err = 0;
 
 	sk = g_io_channel_unix_get_fd(chan);
 	ctxt->io_id = 0;
 
-	len = sizeof(err);
-	if (getsockopt(sk, SOL_SOCKET, SO_ERROR, &err, &len) < 0) {
-		err = errno;
-		goto failed;
-	}
+	len = sizeof(sk_err);
+	if (getsockopt(sk, SOL_SOCKET, SO_ERROR, &sk_err, &len) < 0)
+		err = -errno;
+	else
+		err = -sk_err;
 
 	if (err != 0)
 		goto failed;
 
 	if (sdp_set_notify(ctxt->session, search_completed_cb, ctxt) < 0) {
-		err = EIO;
+		err = -EIO;
 		goto failed;
 	}
 
@@ -253,7 +247,7 @@ static gboolean connect_watch(GIOChannel *chan, GIOCondition cond,
 				search, SDP_ATTR_REQ_RANGE, attrids) < 0) {
 		sdp_list_free(attrids, NULL);
 		sdp_list_free(search, NULL);
-		err = EIO;
+		err = -EIO;
 		goto failed;
 	}
 
@@ -271,7 +265,7 @@ failed:
 	ctxt->session = NULL;
 
 	if (ctxt->cb)
-		ctxt->cb(NULL, -err, ctxt->user_data);
+		ctxt->cb(NULL, err, ctxt->user_data);
 
 	search_context_cleanup(ctxt);
 
@@ -285,6 +279,8 @@ static int create_search_context(struct search_context **ctxt,
 {
 	sdp_session_t *s;
 	GIOChannel *chan;
+	uint32_t prio = 1;
+	int sk;
 
 	if (!ctxt)
 		return -EINVAL;
@@ -304,7 +300,15 @@ static int create_search_context(struct search_context **ctxt,
 	(*ctxt)->session = s;
 	(*ctxt)->uuid = *uuid;
 
-	chan = g_io_channel_unix_new(sdp_get_socket(s));
+	sk = sdp_get_socket(s);
+	/* Set low priority for the SDP connection not to interfere with
+	 * other potential traffic.
+	 */
+	if (setsockopt(sk, SOL_SOCKET, SO_PRIORITY, &prio, sizeof(prio)) < 0)
+		warn("Setting SDP priority failed: %s (%d)",
+						strerror(errno), errno);
+
+	chan = g_io_channel_unix_new(sk);
 	(*ctxt)->io_id = g_io_add_watch(chan,
 				G_IO_OUT | G_IO_HUP | G_IO_ERR | G_IO_NVAL,
 				connect_watch, *ctxt);
@@ -336,7 +340,7 @@ int bt_search_service(const bdaddr_t *src, const bdaddr_t *dst,
 	return 0;
 }
 
-static gint find_by_bdaddr(gconstpointer data, gconstpointer user_data)
+static int find_by_bdaddr(gconstpointer data, gconstpointer user_data)
 {
 	const struct search_context *ctxt = data, *search = user_data;
 	int ret;
@@ -386,4 +390,3 @@ void bt_clear_cached_session(const bdaddr_t *src, const bdaddr_t *dst)
 	if (session)
 		sdp_close(session);
 }
-

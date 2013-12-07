@@ -38,6 +38,9 @@
 #include <sys/param.h>
 #include <sys/ioctl.h>
 #include <sys/socket.h>
+#include <signal.h>
+
+#include <glib.h>
 
 #include <bluetooth/bluetooth.h>
 #include <bluetooth/hci.h>
@@ -53,13 +56,27 @@
 #define FLAGS_LIMITED_MODE_BIT 0x01
 #define FLAGS_GENERAL_MODE_BIT 0x02
 
+#define EIR_FLAGS                   0x01  /* flags */
+#define EIR_UUID16_SOME             0x02  /* 16-bit UUID, more available */
+#define EIR_UUID16_ALL              0x03  /* 16-bit UUID, all listed */
+#define EIR_UUID32_SOME             0x04  /* 32-bit UUID, more available */
+#define EIR_UUID32_ALL              0x05  /* 32-bit UUID, all listed */
+#define EIR_UUID128_SOME            0x06  /* 128-bit UUID, more available */
+#define EIR_UUID128_ALL             0x07  /* 128-bit UUID, all listed */
+#define EIR_NAME_SHORT              0x08  /* shortened local name */
+#define EIR_NAME_COMPLETE           0x09  /* complete local name */
+#define EIR_TX_POWER                0x0A  /* transmit power level */
+#define EIR_DEVICE_ID               0x10  /* device ID */
+
 #define for_each_opt(opt, long, short) while ((opt=getopt_long(argc, argv, short ? short:"+", long, NULL)) != -1)
+
+static volatile int signal_received = 0;
 
 static void usage(void);
 
 static int dev_info(int s, int dev_id, long arg)
 {
-	struct hci_dev_info di = { dev_id: dev_id };
+	struct hci_dev_info di = { .dev_id = dev_id };
 	char addr[18];
 
 	if (ioctl(s, HCIGETDEVINFO, (void *) &di))
@@ -139,9 +156,9 @@ static int conn_list(int s, int dev_id, long arg)
 		char *str;
 		ba2str(&ci->bdaddr, addr);
 		str = hci_lmtostr(ci->link_mode);
-		printf("\t%s %s %s handle %d state %d lm %s mtu %d credits %d/%d\n",
+		printf("\t%s %s %s handle %d state %d lm %s\n",
 			ci->out ? "<" : ">", type2str(ci->type),
-			addr, ci->handle, ci->state, str, ci->mtu, ci->cnt, ci->pkts);
+			addr, ci->handle, ci->state, str);
 		bt_free(str);
 	}
 
@@ -394,13 +411,32 @@ static char *major_classes[] = {
 
 static char *get_device_name(const bdaddr_t *local, const bdaddr_t *peer)
 {
-	char filename[PATH_MAX + 1], addr[18];
+	char filename[PATH_MAX + 1];
+	char local_addr[18], peer_addr[18];
+	GKeyFile *key_file;
+	char *str = NULL;
+	int len;
 
-	ba2str(local, addr);
-	create_name(filename, PATH_MAX, STORAGEDIR, addr, "names");
+	ba2str(local, local_addr);
+	ba2str(peer, peer_addr);
 
-	ba2str(peer, addr);
-	return textfile_get(filename, addr);
+	snprintf(filename, PATH_MAX, STORAGEDIR "/%s/cache/%s", local_addr,
+			peer_addr);
+	filename[PATH_MAX] = '\0';
+	key_file = g_key_file_new();
+
+	if (g_key_file_load_from_file(key_file, filename, 0, NULL)) {
+		str = g_key_file_get_string(key_file, "General", "Name", NULL);
+		if (str) {
+			len = strlen(str);
+			if (len > HCI_MAX_NAME_LENGTH)
+				str[HCI_MAX_NAME_LENGTH] = '\0';
+		}
+	}
+
+	g_key_file_free(key_file);
+
+	return str;
 }
 
 /* Display local devices */
@@ -545,7 +581,7 @@ static void cmd_scan(int dev_id, int argc, char **argv)
 	uint8_t lap[3] = { 0x33, 0x8b, 0x9e };
 	int num_rsp, length, flags;
 	uint8_t cls[3], features[8];
-	char addr[18], name[249], oui[9], *comp, *tmp;
+	char addr[18], name[249], *comp, *tmp;
 	struct hci_version version;
 	struct hci_dev_info di;
 	struct hci_conn_info_req *cr;
@@ -690,9 +726,10 @@ static void cmd_scan(int dev_id, int argc, char **argv)
 			(info+i)->pscan_rep_mode, btohs((info+i)->clock_offset));
 
 		if (extoui) {
-			ba2oui(&(info+i)->bdaddr, oui);
-			comp = ouitocomp(oui);
+			comp = batocomp(&(info+i)->bdaddr);
 			if (comp) {
+				char oui[9];
+				ba2oui(&(info+i)->bdaddr, oui);
 				printf("OUI company:\t%s (%s)\n", comp, oui);
 				free(comp);
 			}
@@ -862,7 +899,7 @@ static void cmd_info(int dev_id, int argc, char **argv)
 	bdaddr_t bdaddr;
 	uint16_t handle;
 	uint8_t features[8], max_page = 0;
-	char name[249], oui[9], *comp, *tmp;
+	char name[249], *comp, *tmp;
 	struct hci_version version;
 	struct hci_dev_info di;
 	struct hci_conn_info_req *cr;
@@ -927,9 +964,10 @@ static void cmd_info(int dev_id, int argc, char **argv)
 
 	printf("\tBD Address:  %s\n", argv[0]);
 
-	ba2oui(&bdaddr, oui);
-	comp = ouitocomp(oui);
+	comp = batocomp(&bdaddr);
 	if (comp) {
+		char oui[9];
+		ba2oui(&bdaddr, oui);
 		printf("\tOUI Company: %s (%s)\n", comp, oui);
 		free(comp);
 	}
@@ -2293,7 +2331,7 @@ static void cmd_clock(int dev_id, int argc, char **argv)
 
 static int read_flags(uint8_t *flags, const uint8_t *data, size_t size)
 {
-	unsigned int offset;
+	size_t offset;
 
 	if (!flags || !data)
 		return -EINVAL;
@@ -2301,11 +2339,16 @@ static int read_flags(uint8_t *flags, const uint8_t *data, size_t size)
 	offset = 0;
 	while (offset < size) {
 		uint8_t len = data[offset];
-		uint8_t type = data[offset + 1];
+		uint8_t type;
 
 		/* Check if it is the end of the significant part */
 		if (len == 0)
 			break;
+
+		if (len + offset > size)
+			break;
+
+		type = data[offset + 1];
 
 		if (type == FLAGS_AD_TYPE) {
 			*flags = data[offset + 2];
@@ -2346,12 +2389,54 @@ static int check_report_filter(uint8_t procedure, le_advertising_info *info)
 	return 0;
 }
 
+static void sigint_handler(int sig)
+{
+	signal_received = sig;
+}
+
+static void eir_parse_name(uint8_t *eir, size_t eir_len,
+						char *buf, size_t buf_len)
+{
+	size_t offset;
+
+	offset = 0;
+	while (offset < eir_len) {
+		uint8_t field_len = eir[0];
+		size_t name_len;
+
+		/* Check for the end of EIR */
+		if (field_len == 0)
+			break;
+
+		if (offset + field_len > eir_len)
+			goto failed;
+
+		switch (eir[1]) {
+		case EIR_NAME_SHORT:
+		case EIR_NAME_COMPLETE:
+			name_len = field_len - 1;
+			if (name_len > buf_len)
+				goto failed;
+
+			memcpy(buf, &eir[2], name_len);
+			return;
+		}
+
+		offset += field_len + 1;
+		eir += field_len + 1;
+	}
+
+failed:
+	snprintf(buf, buf_len, "(unknown)");
+}
+
 static int print_advertising_devices(int dd, uint8_t filter_type)
 {
 	unsigned char buf[HCI_MAX_EVENT_SIZE], *ptr;
 	struct hci_filter nf, of;
+	struct sigaction sa;
 	socklen_t olen;
-	int num, len;
+	int len;
 
 	olen = sizeof(of);
 	if (getsockopt(dd, SOL_HCI, HCI_FILTER, &of, &olen) < 0) {
@@ -2368,14 +2453,22 @@ static int print_advertising_devices(int dd, uint8_t filter_type)
 		return -1;
 	}
 
-	/* Wait for 10 report events */
-	num = 10;
-	while (num--) {
+	memset(&sa, 0, sizeof(sa));
+	sa.sa_flags = SA_NOCLDSTOP;
+	sa.sa_handler = sigint_handler;
+	sigaction(SIGINT, &sa, NULL);
+
+	while (1) {
 		evt_le_meta_event *meta;
 		le_advertising_info *info;
 		char addr[18];
 
 		while ((len = read(dd, buf, sizeof(buf))) < 0) {
+			if (errno == EINTR && signal_received == SIGINT) {
+				len = 0;
+				goto done;
+			}
+
 			if (errno == EAGAIN || errno == EINTR)
 				continue;
 			goto done;
@@ -2392,8 +2485,15 @@ static int print_advertising_devices(int dd, uint8_t filter_type)
 		/* Ignoring multiple reports */
 		info = (le_advertising_info *) (meta->data + 1);
 		if (check_report_filter(filter_type, info)) {
+			char name[30];
+
+			memset(name, 0, sizeof(name));
+
 			ba2str(&info->bdaddr, addr);
-			printf("%s\n", addr);
+			eir_parse_name(info->data, info->length,
+							name, sizeof(name) - 1);
+
+			printf("%s %s\n", addr, name);
 		}
 	}
 
@@ -2410,7 +2510,9 @@ static struct option lescan_options[] = {
 	{ "help",	0, 0, 'h' },
 	{ "privacy",	0, 0, 'p' },
 	{ "passive",	0, 0, 'P' },
+	{ "whitelist",	0, 0, 'w' },
 	{ "discovery",	1, 0, 'd' },
+	{ "duplicates",	0, 0, 'D' },
 	{ 0, 0, 0, 0 }
 };
 
@@ -2418,8 +2520,10 @@ static const char *lescan_help =
 	"Usage:\n"
 	"\tlescan [--privacy] enable privacy\n"
 	"\tlescan [--passive] set scan type passive (default active)\n"
+	"\tlescan [--whitelist] scan for address in the whitelist only\n"
 	"\tlescan [--discovery=g|l] enable general or limited discovery"
-		"procedure\n";
+		"procedure\n"
+	"\tlescan [--duplicates] don't filter duplicates\n";
 
 static void cmd_lescan(int dev_id, int argc, char **argv)
 {
@@ -2427,8 +2531,10 @@ static void cmd_lescan(int dev_id, int argc, char **argv)
 	uint8_t own_type = 0x00;
 	uint8_t scan_type = 0x01;
 	uint8_t filter_type = 0;
+	uint8_t filter_policy = 0x00;
 	uint16_t interval = htobs(0x0010);
 	uint16_t window = htobs(0x0010);
+	uint8_t filter_dup = 1;
 
 	for_each_opt(opt, lescan_options, NULL) {
 		switch (opt) {
@@ -2437,6 +2543,9 @@ static void cmd_lescan(int dev_id, int argc, char **argv)
 			break;
 		case 'P':
 			scan_type = 0x00; /* Passive */
+			break;
+		case 'w':
+			filter_policy = 0x01; /* Whitelist */
 			break;
 		case 'd':
 			filter_type = optarg[0];
@@ -2447,6 +2556,9 @@ static void cmd_lescan(int dev_id, int argc, char **argv)
 
 			interval = htobs(0x0012);
 			window = htobs(0x0012);
+			break;
+		case 'D':
+			filter_dup = 0x00;
 			break;
 		default:
 			printf("%s", lescan_help);
@@ -2465,13 +2577,13 @@ static void cmd_lescan(int dev_id, int argc, char **argv)
 	}
 
 	err = hci_le_set_scan_parameters(dd, scan_type, interval, window,
-							own_type, 0x00, 1000);
+						own_type, filter_policy, 1000);
 	if (err < 0) {
 		perror("Set scan parameters failed");
 		exit(1);
 	}
 
-	err = hci_le_set_scan_enable(dd, 0x01, 0x00, 1000);
+	err = hci_le_set_scan_enable(dd, 0x01, filter_dup, 1000);
 	if (err < 0) {
 		perror("Enable scan failed");
 		exit(1);
@@ -2485,7 +2597,7 @@ static void cmd_lescan(int dev_id, int argc, char **argv)
 		exit(1);
 	}
 
-	err = hci_le_set_scan_enable(dd, 0x00, 0x00, 1000);
+	err = hci_le_set_scan_enable(dd, 0x00, filter_dup, 1000);
 	if (err < 0) {
 		perror("Disable scan failed");
 		exit(1);
@@ -2613,9 +2725,9 @@ static void cmd_lewladd(int dev_id, int argc, char **argv)
 	hci_close_dev(dd);
 
 	if (err < 0) {
-		err = errno;
+		err = -errno;
 		fprintf(stderr, "Can't add to white list: %s(%d)\n",
-							strerror(err), err);
+							strerror(-err), -err);
 		exit(1);
 	}
 }
@@ -2703,9 +2815,9 @@ static void cmd_lewlsz(int dev_id, int argc, char **argv)
 	hci_close_dev(dd);
 
 	if (err < 0) {
-		err = errno;
+		err = -errno;
 		fprintf(stderr, "Can't read white list size: %s(%d)\n",
-							strerror(err), err);
+							strerror(-err), -err);
 		exit(1);
 	}
 
@@ -2748,9 +2860,9 @@ static void cmd_lewlclr(int dev_id, int argc, char **argv)
 	hci_close_dev(dd);
 
 	if (err < 0) {
-		err = errno;
+		err = -errno;
 		fprintf(stderr, "Can't clear white list: %s(%d)\n",
-							strerror(err), err);
+							strerror(-err), -err);
 		exit(1);
 	}
 }
@@ -2878,9 +2990,9 @@ static void cmd_lecup(int dev_id, int argc, char **argv)
 
 	if (hci_le_conn_update(dd, htobs(handle), htobs(min), htobs(max),
 				htobs(latency), htobs(timeout), 5000) < 0) {
-		int err = errno;
+		int err = -errno;
 		fprintf(stderr, "Could not change connection params: %s(%d)\n",
-							strerror(err), err);
+							strerror(-err), -err);
 	}
 
 	hci_close_dev(dd);

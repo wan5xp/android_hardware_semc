@@ -64,10 +64,8 @@ static inline int transport_open(int transport, char *device, speed_t bcsp_rate)
 	switch (transport) {
 	case CSR_TRANSPORT_HCI:
 		return csr_open_hci(device);
-#ifdef HAVE_LIBUSB
 	case CSR_TRANSPORT_USB:
 		return csr_open_usb(device);
-#endif
 	case CSR_TRANSPORT_BCSP:
 		return csr_open_bcsp(device, bcsp_rate);
 	case CSR_TRANSPORT_H4:
@@ -85,10 +83,8 @@ static inline int transport_read(int transport, uint16_t varid, uint8_t *value, 
 	switch (transport) {
 	case CSR_TRANSPORT_HCI:
 		return csr_read_hci(varid, value, length);
-#ifdef HAVE_LIBUSB
 	case CSR_TRANSPORT_USB:
 		return csr_read_usb(varid, value, length);
-#endif
 	case CSR_TRANSPORT_BCSP:
 		return csr_read_bcsp(varid, value, length);
 	case CSR_TRANSPORT_H4:
@@ -106,10 +102,8 @@ static inline int transport_write(int transport, uint16_t varid, uint8_t *value,
 	switch (transport) {
 	case CSR_TRANSPORT_HCI:
 		return csr_write_hci(varid, value, length);
-#ifdef HAVE_LIBUSB
 	case CSR_TRANSPORT_USB:
 		return csr_write_usb(varid, value, length);
-#endif
 	case CSR_TRANSPORT_BCSP:
 		return csr_write_bcsp(varid, value, length);
 	case CSR_TRANSPORT_H4:
@@ -128,11 +122,9 @@ static inline void transport_close(int transport)
 	case CSR_TRANSPORT_HCI:
 		csr_close_hci();
 		break;
-#ifdef HAVE_LIBUSB
 	case CSR_TRANSPORT_USB:
 		csr_close_usb();
 		break;
-#endif
 	case CSR_TRANSPORT_BCSP:
 		csr_close_bcsp();
 		break;
@@ -253,10 +245,8 @@ static int cmd_builddef(int transport, int argc, char *argv[])
 		array[1] = def >> 8;
 
 		err = transport_read(transport, CSR_VARID_GET_NEXT_BUILDDEF, array, 8);
-		if (err < 0) {
-			errno = -err;
+		if (err < 0)
 			break;
-		}
 
 		nextdef = array[2] | (array[3] << 8);
 
@@ -286,10 +276,8 @@ static int cmd_keylen(int transport, int argc, char *argv[])
 	array[1] = handle >> 8;
 
 	err = transport_read(transport, CSR_VARID_CRYPT_KEY_LENGTH, array, 8);
-	if (err < 0) {
-		errno = -err;
+	if (err < 0)
 		return -1;
-	}
 
 	handle = array[0] | (array[1] << 8);
 	keylen = array[2] | (array[3] << 8);
@@ -310,10 +298,8 @@ static int cmd_clock(int transport, int argc, char *argv[])
 	memset(array, 0, sizeof(array));
 
 	err = transport_read(transport, CSR_VARID_BT_CLOCK, array, 8);
-	if (err < 0) {
-		errno = -err;
+	if (err < 0)
 		return -1;
-	}
 
 	clock = array[2] | (array[3] << 8) | (array[0] << 16) | (array[1] << 24);
 
@@ -333,10 +319,8 @@ static int cmd_rand(int transport, int argc, char *argv[])
 	memset(array, 0, sizeof(array));
 
 	err = transport_read(transport, CSR_VARID_RAND, array, 8);
-	if (err < 0) {
-		errno = -err;
+	if (err < 0)
 		return -1;
-	}
 
 	rand = array[0] | (array[1] << 8);
 
@@ -357,10 +341,8 @@ static int cmd_chiprev(int transport, int argc, char *argv[])
 	memset(array, 0, sizeof(array));
 
 	err = transport_read(transport, CSR_VARID_CHIPREV, array, 8);
-	if (err < 0) {
-		errno = -err;
+	if (err < 0)
 		return -1;
-	}
 
 	rev = array[0] | (array[1] << 8);
 
@@ -417,10 +399,8 @@ static int cmd_buildname(int transport, int argc, char *argv[])
 	memset(array, 0, sizeof(array));
 
 	err = transport_read(transport, CSR_VARID_READ_BUILD_NAME, array, 128);
-	if (err < 0) {
-		errno = -err;
+	if (err < 0)
 		return -1;
-	}
 
 	for (i = 0; i < sizeof(name); i++)
 		name[i] = array[(i * 2) + 4];
@@ -441,10 +421,8 @@ static int cmd_panicarg(int transport, int argc, char *argv[])
 	memset(array, 0, sizeof(array));
 
 	err = transport_read(transport, CSR_VARID_PANIC_ARG, array, 8);
-	if (err < 0) {
-		errno = -err;
+	if (err < 0)
 		return -1;
-	}
 
 	error = array[0] | (array[1] << 8);
 
@@ -465,10 +443,8 @@ static int cmd_faultarg(int transport, int argc, char *argv[])
 	memset(array, 0, sizeof(array));
 
 	err = transport_read(transport, CSR_VARID_FAULT_ARG, array, 8);
-	if (err < 0) {
-		errno = -err;
+	if (err < 0)
 		return -1;
-	}
 
 	error = array[0] | (array[1] << 8);
 

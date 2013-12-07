@@ -3,11 +3,12 @@ include $(CLEAR_VARS)
 
 LOCAL_SRC_FILES:= \
 	bluetooth.c \
-	sdp.c \
 	hci.c \
+	sdp.c \
 	uuid.c \
 
 LOCAL_C_INCLUDES:= \
+	$(LOCAL_PATH)/../ \
 	$(LOCAL_PATH)/bluetooth \
 
 LOCAL_SHARED_LIBRARIES := \
@@ -16,6 +17,6 @@ LOCAL_SHARED_LIBRARIES := \
 
 LOCAL_MODULE:=libbluetooth
 
-LOCAL_CFLAGS += -O3 -Wno-missing-field-initializers -Wno-pointer-arith
+LOCAL_CFLAGS += -O3 -Wno-missing-field-initializers -Wno-pointer-arith -DHAVE_CONFIG_H
 
 include $(BUILD_SHARED_LIBRARY)

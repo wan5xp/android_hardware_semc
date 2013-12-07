@@ -10,13 +10,13 @@ LOCAL_SRC_FILES:= \
 	btio.c
 
 LOCAL_CFLAGS:= \
-	-DVERSION=\"4.93\" \
+	-DVERSION=\"5.11\" \
 
 LOCAL_C_INCLUDES:= \
 	$(LOCAL_PATH)/../lib \
 	$(LOCAL_PATH)/../gdbus \
 	$(call include-path-for, glib) \
-	$(LOCAL_PATH)/../../glib \
+	$(LOCAL_PATH)/../../glib/include \
 
 LOCAL_SHARED_LIBRARIES := \
 	libcutils \

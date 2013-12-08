@@ -44,7 +44,7 @@
 #include <bluetooth/sdp_lib.h>
 #include <lib/cmtp.h>
 
-#include "../config.h"
+#include "ppoll.h"
 
 static volatile sig_atomic_t __io_canceled = 0;
 

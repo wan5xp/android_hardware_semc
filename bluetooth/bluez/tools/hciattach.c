@@ -48,7 +48,7 @@
 
 #include "hciattach.h"
 
-#include "../config.h"
+#include "ppoll.h"
 
 struct uart_t {
 	char *type;

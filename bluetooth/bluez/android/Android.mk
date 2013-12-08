@@ -10,6 +10,7 @@ pathmap_INCL += device/sony/$(TARGET_DEVICE)/hardware
 BLUEZ_COMMON_CFLAGS := -DVERSION=\"$(BLUEZ_VERSION)\" \
 	-DPLATFORM_SDK_VERSION=$(PLATFORM_SDK_VERSION) \
 	-DHAVE_CONFIG_H \
+	-DANDROID \
 	-DANDROID_4_3_OR_ABOVE
 
 # Disable warnings enabled by Android but not enabled in autotools build

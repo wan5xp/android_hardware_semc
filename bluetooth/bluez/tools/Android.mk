@@ -35,7 +35,8 @@ include $(BUILD_EXECUTABLE)
 include $(CLEAR_VARS)
 
 LOCAL_SRC_FILES:= \
-	sdptool.c
+	sdptool.c \
+	../src/sdp-xml.c
 
 LOCAL_CFLAGS:= \
 	-DVERSION=\"5.11\" \
@@ -45,6 +46,7 @@ LOCAL_CFLAGS:= \
 LOCAL_C_INCLUDES:=\
 	$(LOCAL_PATH)/../lib \
 	$(LOCAL_PATH)/../src \
+	$(LOCAL_PATH)/../../glib/include \
 
 LOCAL_SHARED_LIBRARIES := \
 	libbluetooth

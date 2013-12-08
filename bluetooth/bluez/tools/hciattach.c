@@ -48,6 +48,8 @@
 
 #include "hciattach.h"
 
+#include "../config.h"
+
 struct uart_t {
 	char *type;
 	int  m_id;

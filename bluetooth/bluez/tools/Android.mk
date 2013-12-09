@@ -276,7 +276,8 @@ LOCAL_C_INCLUDES:= \
 	$(LOCAL_PATH)/../ \
 	$(LOCAL_PATH)/../src \
 	$(LOCAL_PATH)/../lib \
-	$(LOCAL_PATH)/../tools
+	$(LOCAL_PATH)/../tools \
+	$(LOCAL_PATH)/../../glib/include
 
 LOCAL_SHARED_LIBRARIES := \
 	libbluetooth

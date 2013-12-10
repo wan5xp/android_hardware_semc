@@ -10,8 +10,7 @@ pathmap_INCL += device/sony/$(TARGET_DEVICE)/hardware
 BLUEZ_COMMON_CFLAGS := -DVERSION=\"$(BLUEZ_VERSION)\" \
 	-DPLATFORM_SDK_VERSION=$(PLATFORM_SDK_VERSION) \
 	-DHAVE_CONFIG_H \
-	-DANDROID \
-	-DANDROID_4_3_OR_ABOVE
+	-DANDROID
 
 # Disable warnings enabled by Android but not enabled in autotools build
 BLUEZ_COMMON_CFLAGS += -Wno-pointer-arith -Wno-missing-field-initializers
@@ -197,7 +196,7 @@ LOCAL_C_INCLUDES += \
 
 LOCAL_CFLAGS := $(BLUEZ_COMMON_CFLAGS)
 
-LOCAL_MODULE_PATH := $(TARGET_OUT_OPTIONAL_EXECUTABLES)
+LOCAL_MODULE_PATH := $(TARGET_OUT_EXECUTABLES)
 LOCAL_MODULE_TAGS := optional
 LOCAL_MODULE := btmon
 

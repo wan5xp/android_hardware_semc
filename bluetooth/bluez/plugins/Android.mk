@@ -32,7 +32,6 @@ LOCAL_C_INCLUDES:= \
 	$(LOCAL_PATH)/../../../../../device/sony/$(TARGET_DEVICE)/hardware \
 
 LOCAL_SHARED_LIBRARIES := \
-	libbluetoothd \
 	libbluetooth \
 	libcutils \
 	libdbus \

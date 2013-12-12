@@ -4,10 +4,21 @@
 # Reference: https://backports.wiki.kernel.org/index.php/Main_Page
 
 CM_ROOT=`echo ${PWD%/*/*/*}`
-DEVICE="pepper"
+DEVICE="lotus"
 
-make clean
-make mrproper
+make \
+ARCH=arm CROSS_COMPILE=$CM_ROOT/prebuilt/linux-x86/toolchain/arm-eabi-4.4.3/bin/arm-eabi- \
+KERNEL_DIR=$CM_ROOT/out/target/product/$DEVICE/obj/KERNEL_OBJ \
+KLIB_BUILD=$CM_ROOT/out/target/product/$DEVICE/obj/KERNEL_OBJ \
+KLIB=$CM_ROOT/out/target/product/$DEVICE/obj/KERNEL_OBJ \
+clean
+
+make \
+ARCH=arm CROSS_COMPILE=$CM_ROOT/prebuilt/linux-x86/toolchain/arm-eabi-4.4.3/bin/arm-eabi- \
+KERNEL_DIR=$CM_ROOT/out/target/product/$DEVICE/obj/KERNEL_OBJ \
+KLIB_BUILD=$CM_ROOT/out/target/product/$DEVICE/obj/KERNEL_OBJ \
+KLIB=$CM_ROOT/out/target/product/$DEVICE/obj/KERNEL_OBJ \
+mrproper
 
 make \
 ARCH=arm CROSS_COMPILE=$CM_ROOT/prebuilt/linux-x86/toolchain/arm-eabi-4.4.3/bin/arm-eabi- \

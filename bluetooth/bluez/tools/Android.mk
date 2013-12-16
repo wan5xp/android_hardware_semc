@@ -16,7 +16,7 @@ LOCAL_SRC_FILES:= \
 	hciattach_intel.c
 
 LOCAL_CFLAGS:= \
-	-DVERSION=\"5.11\" \
+	-DVERSION=\"5.12\" \
 	-Wno-missing-field-initializers \
 	-Wno-pointer-arith
 
@@ -44,7 +44,7 @@ LOCAL_SRC_FILES:= \
 	csr.c
 
 LOCAL_CFLAGS:= \
-	-DVERSION=\"5.11\" \
+	-DVERSION=\"5.12\" \
 	-Wno-missing-field-initializers \
 	-Wno-pointer-arith
 
@@ -73,7 +73,7 @@ LOCAL_SRC_FILES:= \
 	../src/oui.c
 
 LOCAL_CFLAGS:= \
-	-DVERSION=\"5.11\" \
+	-DVERSION=\"5.12\" \
 	-DSTORAGEDIR=\"/data/misc/bluetoothd\" \
 	-Wno-missing-field-initializers \
 	-Wno-pointer-arith
@@ -127,7 +127,7 @@ LOCAL_SRC_FILES:= \
 	parser/bpa.c
 
 LOCAL_CFLAGS:= \
-	-DVERSION=\"5.11\" \
+	-DVERSION=\"5.12\" \
 	-Wno-missing-field-initializers \
 	-Wno-pointer-arith
 
@@ -155,7 +155,7 @@ LOCAL_SRC_FILES:= \
 	rfcomm.c
 
 LOCAL_CFLAGS:= \
-	-DVERSION=\"5.11\" \
+	-DVERSION=\"5.12\" \
 	-Wno-missing-field-initializers \
 	-Wno-pointer-arith
 
@@ -183,7 +183,7 @@ LOCAL_SRC_FILES:= \
 	rctest.c
 
 LOCAL_CFLAGS:= \
-	-DVERSION=\"5.11\" \
+	-DVERSION=\"5.12\" \
 	-Wno-missing-field-initializers \
 	-Wno-pointer-arith
 
@@ -211,7 +211,7 @@ LOCAL_SRC_FILES:= \
 	l2test.c
 
 LOCAL_CFLAGS:= \
-	-DVERSION=\"5.11\" \
+	-DVERSION=\"5.12\" \
 	-Wno-missing-field-initializers \
 	-Wno-pointer-arith
 
@@ -239,7 +239,7 @@ LOCAL_SRC_FILES:= \
 	l2ping.c
 
 LOCAL_CFLAGS:= \
-	-DVERSION=\"5.11\" \
+	-DVERSION=\"5.12\" \
 	-Wno-missing-field-initializers \
 	-Wno-pointer-arith
 
@@ -268,7 +268,7 @@ LOCAL_SRC_FILES:= \
 	../src/sdp-xml.c
 
 LOCAL_CFLAGS:= \
-	-DVERSION=\"5.11\" \
+	-DVERSION=\"5.12\" \
 	-Wno-missing-field-initializers \
 	-Wno-pointer-arith
 
@@ -298,7 +298,7 @@ LOCAL_SRC_FILES:= \
 	ciptool.c
 
 LOCAL_CFLAGS:= \
-	-DVERSION=\"5.11\" \
+	-DVERSION=\"5.12\" \
 	-Wno-missing-field-initializers \
 	-Wno-pointer-arith
 
@@ -333,7 +333,7 @@ LOCAL_SRC_FILES:= \
 	ubcsp.c
 
 LOCAL_CFLAGS:= \
-	-DVERSION=\"5.11\" \
+	-DVERSION=\"5.12\" \
 	-Wno-missing-field-initializers \
 	-Wno-pointer-arith
 

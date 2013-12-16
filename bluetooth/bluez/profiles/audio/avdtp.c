@@ -394,9 +394,6 @@ struct avdtp {
 
 	avdtp_session_state_t state;
 
-	/* True if the entire device is being disconnected */
-	gboolean device_disconnect;
-
 	guint auth_id;
 
 	GIOChannel *io;
@@ -1199,11 +1196,6 @@ static void set_disconnect_timer(struct avdtp *session)
 {
 	if (session->dc_timer)
 		remove_disconnect_timer(session);
-
-	if (session->device_disconnect) {
-		session->dc_timer = g_idle_add(disconnect_timeout, session);
-		return;
-	}
 
 	session->dc_timer = g_timeout_add_seconds(DISCONNECT_TIMEOUT,
 						disconnect_timeout,
@@ -2475,7 +2467,7 @@ static void avdtp_confirm_cb(GIOChannel *chan, gpointer data)
 
 	DBG("AVDTP: incoming connect from %s", address);
 
-	device = adapter_find_device(adapter_find(&src), &dst);
+	device = btd_adapter_find_device(adapter_find(&src), &dst);
 	if (!device)
 		goto drop;
 
@@ -2531,11 +2523,13 @@ static GIOChannel *l2cap_connect(struct avdtp *session)
 {
 	GError *err = NULL;
 	GIOChannel *io;
+	const bdaddr_t *src;
+
+	src = btd_adapter_get_address(session->server->adapter);
 
 	io = bt_io_connect(avdtp_connect_cb, session,
 				NULL, &err,
-				BT_IO_OPT_SOURCE_BDADDR,
-				adapter_get_address(session->server->adapter),
+				BT_IO_OPT_SOURCE_BDADDR, src,
 				BT_IO_OPT_DEST_BDADDR,
 				device_get_address(session->device),
 				BT_IO_OPT_PSM, AVDTP_PSM,
@@ -3183,8 +3177,8 @@ struct avdtp_service_capability *avdtp_stream_get_codec(
 	return NULL;
 }
 
-gboolean avdtp_stream_has_capability(struct avdtp_stream *stream,
-				struct avdtp_service_capability *cap)
+static gboolean avdtp_stream_has_capability(struct avdtp_stream *stream,
+					struct avdtp_service_capability *cap)
 {
 	GSList *l;
 	struct avdtp_service_capability *stream_cap;
@@ -3219,7 +3213,16 @@ gboolean avdtp_stream_has_capabilities(struct avdtp_stream *stream,
 struct avdtp_remote_sep *avdtp_stream_get_remote_sep(
 						struct avdtp_stream *stream)
 {
-	return avdtp_get_remote_sep(stream->session, stream->rseid);
+	GSList *l;
+
+	for (l = stream->session->seps; l; l = l->next) {
+		struct avdtp_remote_sep *sep = l->data;
+
+		if (sep->seid == stream->rseid)
+			return sep;
+	}
+
+	return NULL;
 }
 
 gboolean avdtp_stream_get_transport(struct avdtp_stream *stream, int *sock,
@@ -3268,44 +3271,9 @@ static int process_queue(struct avdtp *session)
 	return send_req(session, FALSE, req);
 }
 
-struct avdtp_remote_sep *avdtp_get_remote_sep(struct avdtp *session,
-						uint8_t seid)
-{
-	GSList *l;
-
-	for (l = session->seps; l; l = l->next) {
-		struct avdtp_remote_sep *sep = l->data;
-
-		if (sep->seid == seid)
-			return sep;
-	}
-
-	return NULL;
-}
-
-uint8_t avdtp_get_seid(struct avdtp_remote_sep *sep)
-{
-	return sep->seid;
-}
-
-uint8_t avdtp_get_type(struct avdtp_remote_sep *sep)
-{
-	return sep->type;
-}
-
 struct avdtp_service_capability *avdtp_get_codec(struct avdtp_remote_sep *sep)
 {
 	return sep->codec;
-}
-
-gboolean avdtp_get_delay_reporting(struct avdtp_remote_sep *sep)
-{
-	return sep->delay_reporting;
-}
-
-struct avdtp_stream *avdtp_get_stream(struct avdtp_remote_sep *sep)
-{
-	return sep->stream;
 }
 
 struct avdtp_service_capability *avdtp_service_cap_new(uint8_t category,
@@ -3709,7 +3677,8 @@ static struct avdtp_server *avdtp_server_init(struct btd_adapter *adapter)
 
 	server = g_new0(struct avdtp_server, 1);
 
-	server->io = avdtp_server_socket(adapter_get_address(adapter), TRUE);
+	server->io = avdtp_server_socket(btd_adapter_get_address(adapter),
+									TRUE);
 	if (!server->io) {
 		g_free(server);
 		return NULL;
@@ -3865,11 +3834,6 @@ struct btd_device *avdtp_get_device(struct avdtp *session)
 gboolean avdtp_has_stream(struct avdtp *session, struct avdtp_stream *stream)
 {
 	return g_slist_find(session->streams, stream) ? TRUE : FALSE;
-}
-
-void avdtp_set_device_disconnect(struct avdtp *session, gboolean dev_dc)
-{
-	session->device_disconnect = dev_dc;
 }
 
 unsigned int avdtp_add_state_cb(struct btd_device *dev,

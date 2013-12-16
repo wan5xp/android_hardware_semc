@@ -42,7 +42,7 @@
 #include <bluetooth/l2cap.h>
 #include <bluetooth/sdp.h>
 #include <bluetooth/sdp_lib.h>
-#include <lib/cmtp.h>
+#include <bluetooth/cmtp.h>
 
 #include "ppoll.h"
 

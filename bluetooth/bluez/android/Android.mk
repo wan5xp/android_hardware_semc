@@ -9,6 +9,7 @@ pathmap_INCL += device/sony/$(TARGET_DEVICE)/hardware
 # Specify common compiler flags
 BLUEZ_COMMON_CFLAGS := -DVERSION=\"$(BLUEZ_VERSION)\" \
 	-DPLATFORM_SDK_VERSION=$(PLATFORM_SDK_VERSION) \
+	-DPLATFORM_SDK_VERSION=$(PLATFORM_SDK_VERSION) \
 	-DHAVE_CONFIG_H \
 	-DANDROID
 
@@ -27,6 +28,7 @@ LOCAL_SRC_FILES := \
 	hidhost.c \
 	socket.c \
 	ipc.c ipc.h \
+	avdtp.c \
 	a2dp.c \
 	pan.c \
 	../src/log.c \
@@ -43,6 +45,7 @@ LOCAL_SRC_FILES := \
 	../lib/hci.c \
 	../btio/btio.c \
 	../src/sdp-client.c \
+	../profiles/network/bnep.c \
 
 LOCAL_C_INCLUDES := \
 	$(LOCAL_PATH)/../../glib/include
@@ -66,6 +69,7 @@ lib_headers := \
 	sdp.h \
 	rfcomm.h \
 	sco.h \
+	bnep.h \
 
 $(shell mkdir -p $(LOCAL_PATH)/../lib/bluetooth)
 
@@ -191,8 +195,7 @@ LOCAL_C_INCLUDES := \
 	$(LOCAL_PATH)/../src/shared \
 
 LOCAL_C_INCLUDES += \
-	$(call include-path-for, glib) \
-	$(call include-path-for, glib)/glib \
+	$(LOCAL_PATH)/../../glib/include
 
 LOCAL_CFLAGS := $(BLUEZ_COMMON_CFLAGS)
 

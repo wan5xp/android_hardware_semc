@@ -2449,7 +2449,7 @@ fi
 
 # Define the identity of the package.
  PACKAGE=alsa-lib
- VERSION=1.0.19
+ VERSION=1.0.20
 
 
 cat >>confdefs.h <<_ACEOF
@@ -21594,6 +21594,7 @@ else
   build_alisp="yes"
 fi
 
+test "$softfloat" = "yes" && build_alisp="no"
 # Check whether --enable-old-symbols was given.
 if test "${enable_old_symbols+set}" = set; then
   enableval=$enable_old_symbols; keep_old_symbols="$enableval"
@@ -21811,6 +21812,7 @@ fi
 
 if test "$softfloat" = "yes"; then
   build_pcm_lfloat="no"
+  build_pcm_ladspa="no"
 fi
 
 

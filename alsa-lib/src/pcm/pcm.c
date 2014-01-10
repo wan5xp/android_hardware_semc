@@ -168,17 +168,17 @@ The PCM device is prepared for operation. Application can use
 the operation.
 
 \par SND_PCM_STATE_RUNNING
-The PCM device is running. It processes the samples. The stream can
+The PCM device has been started and is running. It processes the samples. The stream can
 be stopped using the #snd_pcm_drop() or
-#snd_pcm_drain calls.
+#snd_pcm_drain() calls.
 
 \par SND_PCM_STATE_XRUN
 The PCM device reached overrun (capture) or underrun (playback).
 You can use the -EPIPE return code from I/O functions
 (#snd_pcm_writei(), #snd_pcm_writen(), #snd_pcm_readi(), #snd_pcm_readn())
 to determine this state without checking
-the actual state via #snd_pcm_state() call. You can recover from
-this state with #snd_pcm_prepare(),
+the actual state via #snd_pcm_state() call. It is recommended to use
+the helper function #snd_pcm_recover() to recover from this state, but you can also use #snd_pcm_prepare(),
 #snd_pcm_drop() or #snd_pcm_drain() calls.
 
 \par SND_PCM_STATE_DRAINING
@@ -634,6 +634,7 @@ playback devices.
 #include <stdarg.h>
 #include <signal.h>
 #include <sys/poll.h>
+#include <sys/shm.h>
 #include <sys/mman.h>
 #include <limits.h>
 #include "pcm_local.h"
@@ -1225,9 +1226,9 @@ use_default_symbol_version(__snd_pcm_forward, snd_pcm_forward, ALSA_0.9.0rc8);
  * \retval -EPIPE an underrun occurred
  * \retval -ESTRPIPE a suspend event occurred (stream is suspended and waiting for an application recovery)
  *
- * If the blocking behaviour is selected, then routine waits until
- * all requested bytes are played or put to the playback ring buffer.
- * The count of bytes can be less only if a signal or underrun occurred.
+ * If the blocking behaviour is selected and it is running, then routine waits until
+ * all requested frames are played or put to the playback ring buffer.
+ * The returned number of frames can be less only if a signal or underrun occurred.
  *
  * If the non-blocking behaviour is selected, then routine doesn't wait at all.
  */ 
@@ -1257,9 +1258,9 @@ snd_pcm_sframes_t snd_pcm_writei(snd_pcm_t *pcm, const void *buffer, snd_pcm_ufr
  * \retval -EPIPE an underrun occurred
  * \retval -ESTRPIPE a suspend event occurred (stream is suspended and waiting for an application recovery)
  *
- * If the blocking behaviour is selected, then routine waits until
- * all requested bytes are played or put to the playback ring buffer.
- * The count of bytes can be less only if a signal or underrun occurred.
+ * If the blocking behaviour is selected and it is running, then routine waits until
+ * all requested frames are played or put to the playback ring buffer.
+ * The returned number of frames can be less only if a signal or underrun occurred.
  *
  * If the non-blocking behaviour is selected, then routine doesn't wait at all.
  */ 
@@ -1289,8 +1290,8 @@ snd_pcm_sframes_t snd_pcm_writen(snd_pcm_t *pcm, void **bufs, snd_pcm_uframes_t 
  * \retval -EPIPE an overrun occurred
  * \retval -ESTRPIPE a suspend event occurred (stream is suspended and waiting for an application recovery)
  *
- * If the blocking behaviour was selected, then routine waits until
- * all requested bytes are filled. The count of bytes can be less only
+ * If the blocking behaviour was selected and it is running, then routine waits until
+ * all requested frames are filled. The returned number of frames can be less only
  * if a signal or underrun occurred.
  *
  * If the non-blocking behaviour is selected, then routine doesn't wait at all.
@@ -1321,8 +1322,8 @@ snd_pcm_sframes_t snd_pcm_readi(snd_pcm_t *pcm, void *buffer, snd_pcm_uframes_t 
  * \retval -EPIPE an overrun occurred
  * \retval -ESTRPIPE a suspend event occurred (stream is suspended and waiting for an application recovery)
  *
- * If the blocking behaviour was selected, then routine waits until
- * all requested bytes are filled. The count of bytes can be less only
+ * If the blocking behaviour was selected and it is running, then routine waits until
+ * all requested frames are filled. The returned number of frames can be less only
  * if a signal or underrun occurred.
  *
  * If the non-blocking behaviour is selected, then routine doesn't wait at all.
@@ -2459,8 +2460,8 @@ snd_pcm_sframes_t snd_pcm_avail(snd_pcm_t *pcm)
 /**
  * \brief Combine snd_pcm_avail and snd_pcm_delay functions
  * \param pcm PCM handle
- * \param avail Number of available frames in the ring buffer
- * \param delay Total I/O latency in frames
+ * \param availp Number of available frames in the ring buffer
+ * \param delayp Total I/O latency in frames
  * \return zero on success otherwise a negative error code
  *
  * The avail and delay values retuned are in sync.
@@ -7209,6 +7210,8 @@ OBSOLETE1(snd_pcm_sw_params_get_silence_size, ALSA_0.9, ALSA_0.9.0rc4);
  * \param err error number
  * \param silent do not print error reason
  * \return 0 when error code was handled successfuly, otherwise a negative error code
+ *
+ * This a high-level helper function building on other functions.
  *
  * This functions handles -EINTR (interrupted system call),
  * -EPIPE (overrun or underrun) and -ESTRPIPE (stream is suspended)

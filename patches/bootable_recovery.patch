@@ -54,6 +54,7 @@ index 82dece3..58a404e 100644
  #include "recovery_ui.h"
  
  #include "extendedcommands.h"
+ #include "recovery_settings.h"
 +#include "adefines.h"
  #include "nandroid.h"
  #include "mounts.h"
@@ -62,6 +63,7 @@ index 82dece3..58a404e 100644
         }
      }
  #endif
+ 
 -    ui_set_background(BACKGROUND_ICON_NONE);
 +    ui_set_background(BACKGROUND_ICON_CLOCKWORK);
      ui_print("\nInstall from sdcard complete.\n");

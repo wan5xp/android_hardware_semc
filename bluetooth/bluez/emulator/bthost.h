@@ -72,6 +72,10 @@ void bthost_write_scan_enable(struct bthost *bthost, uint8_t scan);
 
 void bthost_set_adv_enable(struct bthost *bthost, uint8_t enable);
 
+void bthost_write_ssp_mode(struct bthost *bthost, uint8_t mode);
+
+void bthost_request_auth(struct bthost *bthost, uint16_t handle);
+
 void bthost_le_start_encrypt(struct bthost *bthost, uint16_t handle,
 							const uint8_t ltk[16]);
 typedef void (*bthost_l2cap_connect_cb) (uint16_t handle, uint16_t cid,
@@ -79,6 +83,21 @@ typedef void (*bthost_l2cap_connect_cb) (uint16_t handle, uint16_t cid,
 
 void bthost_add_l2cap_server(struct bthost *bthost, uint16_t psm,
 				bthost_l2cap_connect_cb func, void *user_data);
+
+void bthost_set_pin_code(struct bthost *bthost, const uint8_t *pin,
+							uint8_t pin_len);
+void bthost_set_io_capability(struct bthost *bthost, uint8_t io_capability);
+void bthost_set_reject_user_confirm(struct bthost *bthost, bool reject);
+
+typedef void (*bthost_rfcomm_connect_cb) (uint16_t handle, uint16_t cid,
+						void *user_data, bool status);
+
+void bthost_add_rfcomm_server(struct bthost *bthost, uint8_t channel,
+			bthost_rfcomm_connect_cb func, void *user_data);
+
+bool bthost_connect_rfcomm(struct bthost *bthost, uint16_t handle,
+				uint8_t channel, bthost_rfcomm_connect_cb func,
+				void *user_data);
 
 void bthost_start(struct bthost *bthost);
 void bthost_stop(struct bthost *bthost);

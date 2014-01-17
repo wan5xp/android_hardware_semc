@@ -27,13 +27,16 @@ LOCAL_SRC_FILES := \
 	bluetooth.c \
 	hidhost.c \
 	socket.c \
-	ipc.c ipc.h \
+	ipc.c \
+	audio-ipc.c \
 	avdtp.c \
 	a2dp.c \
 	pan.c \
 	../src/log.c \
 	../src/shared/mgmt.c \
 	../src/shared/util.c \
+	../src/shared/queue.c \
+	../src/shared/io-glib.c \
 	../src/sdpd-database.c \
 	../src/sdpd-service.c \
 	../src/sdpd-request.c \
@@ -75,6 +78,7 @@ $(shell mkdir -p $(LOCAL_PATH)/../lib/bluetooth)
 
 $(foreach file,$(lib_headers), $(shell ln -sf ../$(file) $(LOCAL_PATH)/../lib/bluetooth/$(file)))
 
+LOCAL_MODULE_TAGS := optional
 LOCAL_MODULE := bluetoothd
 
 include $(BUILD_EXECUTABLE)
@@ -107,7 +111,7 @@ LOCAL_MODULE := bluetooth.default
 LOCAL_MODULE_PATH := $(TARGET_OUT_SHARED_LIBRARIES)/hw
 LOCAL_MODULE_TAGS := optional
 LOCAL_MODULE_CLASS := SHARED_LIBRARIES
-LOCAL_REQUIRED_MODULES := haltest bluetoothd
+LOCAL_REQUIRED_MODULES := bluetoothd init.bluetooth.rc
 
 include $(BUILD_SHARED_LIBRARY)
 
@@ -123,6 +127,7 @@ LOCAL_SRC_FILES := \
 	client/terminal.c \
 	client/history.c \
 	client/tabcompletion.c \
+	client/if-audio.c \
 	client/if-av.c \
 	client/if-bt.c \
 	client/if-hf.c \
@@ -146,63 +151,9 @@ LOCAL_CFLAGS := $(BLUEZ_COMMON_CFLAGS)
 
 LOCAL_SHARED_LIBRARIES := libhardware
 
-LOCAL_MODULE_TAGS := optional
+LOCAL_MODULE_PATH := $(TARGET_OUT_OPTIONAL_EXECUTABLES)
+LOCAL_MODULE_TAGS := debug
 LOCAL_MODULE := haltest
-
-include $(BUILD_EXECUTABLE)
-
-#
-# btmon
-#
-
-include $(CLEAR_VARS)
-
-LOCAL_SRC_FILES := \
-	../monitor/main.c \
-	../monitor/bt.h \
-	../monitor/mainloop.h \
-	../monitor/mainloop.c \
-	../monitor/display.h \
-	../monitor/display.c \
-	../monitor/hcidump.h \
-	../monitor/hcidump.c \
-	../monitor/hwdb.c \
-	../monitor/btsnoop.h \
-	../monitor/btsnoop.c \
-	../monitor/control.h \
-	../monitor/control.c \
-	../monitor/packet.h \
-	../monitor/packet.c \
-	../monitor/l2cap.h \
-	../monitor/l2cap.c \
-	../monitor/uuid.h \
-	../monitor/uuid.c \
-	../monitor/sdp.h \
-	../monitor/sdp.c \
-	../monitor/vendor.h \
-	../monitor/vendor.c \
-	../monitor/lmp.h \
-	../monitor/lmp.c \
-	../monitor/crc.h \
-	../monitor/crc.c \
-	../monitor/ll.h \
-	../monitor/ll.c \
-	../lib/hci.c \
-	../lib/bluetooth.c \
-
-LOCAL_C_INCLUDES := \
-	$(LOCAL_PATH)/.. \
-	$(LOCAL_PATH)/../lib \
-	$(LOCAL_PATH)/../src/shared \
-
-LOCAL_C_INCLUDES += \
-	$(LOCAL_PATH)/../../glib/include
-
-LOCAL_CFLAGS := $(BLUEZ_COMMON_CFLAGS)
-
-LOCAL_MODULE_PATH := $(TARGET_OUT_EXECUTABLES)
-LOCAL_MODULE_TAGS := optional
-LOCAL_MODULE := btmon
 
 include $(BUILD_EXECUTABLE)
 
@@ -252,3 +203,17 @@ LOCAL_MODULE_TAGS := optional
 LOCAL_MODULE := l2test
 
 include $(BUILD_EXECUTABLE)
+
+#
+# init.bluetooth.rc
+#
+
+include $(CLEAR_VARS)
+
+LOCAL_MODULE := init.bluetooth.rc
+LOCAL_MODULE_CLASS := ETC
+LOCAL_SRC_FILES := $(LOCAL_MODULE)
+LOCAL_MODULE_TAGS := optional
+LOCAL_MODULE_PATH := $(TARGET_ROOT_OUT)
+
+include $(BUILD_PREBUILT)

@@ -39,40 +39,27 @@
 #define SND_FILE_LOAD		ALOAD_DEVICE_DIRECTORY "aloadC%i"
 #endif
 
-static int snd_card_load2(const char *control)
-{
-	int open_dev;
-	snd_ctl_card_info_t info;
-
-	open_dev = snd_open_device(control, O_RDONLY);
-	if (open_dev >= 0) {
-		if (ioctl(open_dev, SNDRV_CTL_IOCTL_CARD_INFO, &info) < 0) {
-			int err = -errno;
-			close(open_dev);
-			return err;
-		}
-		close(open_dev);
-		return info.card;
-	} else {
-		return -errno;
-	}
-}
-
 static int snd_card_load1(int card)
 {
-	int res;
+	int open_dev;
 	char control[sizeof(SND_FILE_CONTROL) + 10];
 
 	sprintf(control, SND_FILE_CONTROL, card);
-	res = snd_card_load2(control);
+
+	open_dev = snd_open_device(control, O_RDONLY);
 #ifdef SUPPORT_ALOAD
-	if (res < 0) {
+	if (open_dev < 0) {
 		char aload[sizeof(SND_FILE_LOAD) + 10];
 		sprintf(aload, SND_FILE_LOAD, card);
-		res = snd_card_load2(aload);
+		open_dev = snd_open_device(aload, O_RDONLY);
 	}
 #endif
-	return res;
+	if (open_dev >= 0) {
+		close (open_dev);
+		return 0;
+	} else {
+		return -errno;
+	}
 }
 
 /**
@@ -82,7 +69,7 @@ static int snd_card_load1(int card)
  */
 int snd_card_load(int card)
 {
-	return !!(snd_card_load1(card) >= 0);
+	return !!(snd_card_load1(card) == 0);
 }
 
 /**
@@ -120,7 +107,6 @@ int snd_card_next(int *rcard)
  *
  * The accepted format is an integer value in ASCII representation
  * or the card identifier (the id parameter for sound-card drivers).
- * The control device name like /dev/snd/controlC0 is accepted, too.
  */
 int snd_card_get_index(const char *string)
 {
@@ -141,8 +127,6 @@ int snd_card_get_index(const char *string)
 			return card;
 		return err;
 	}
-	if (string[0] == '/')	/* device name */
-		return snd_card_load2(string);
 	for (card = 0; card < 32; card++) {
 #ifdef SUPPORT_ALOAD
 		if (! snd_card_load(card))

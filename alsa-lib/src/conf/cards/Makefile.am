@@ -41,7 +41,6 @@ cfg_files = aliases.conf \
 	RME9636.conf \
 	RME9652.conf \
 	SI7018.conf \
-	SB-XFi.conf \
 	TRID4DWAVENX.conf \
 	USB-Audio.conf \
 	YMF744.conf \

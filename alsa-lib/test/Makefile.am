@@ -1,5 +1,3 @@
-SUBDIRS=. lsb
-
 check_PROGRAMS=control pcm pcm_min latency seq \
 	       playmidi1 timer rawmidi midiloop \
 	       oldapi queue_timer namehint client_event_filter

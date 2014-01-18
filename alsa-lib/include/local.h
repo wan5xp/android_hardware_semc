@@ -230,28 +230,22 @@ extern snd_lib_error_handler_t snd_err_msg;
 # define link_warning(symbol, msg)
 #endif
 
-static inline int snd_open_device(const char *filename, int fmode)
-{
-	int fd;
-
-#ifdef O_CLOEXEC
-	fmode |= O_CLOEXEC;
-#endif
-	fd = open(filename, fmode);
-
 /* open with resmgr */
 #ifdef SUPPORT_RESMGR
-	if (fd < 0) {
-		if (errno == EAGAIN || errno == EBUSY)
-			return fd;
-		if (! access(filename, F_OK))
-			fd = rsm_open_device(filename, fmode);
-	}
-#endif
+static inline int snd_open_device(const char *filename, int fmode)
+{
+	int fd = open(filename, fmode);
 	if (fd >= 0)
-		fcntl(fd, F_SETFD, FD_CLOEXEC);
-	return fd;
+		return fd;
+	if (errno == EAGAIN || errno == EBUSY)
+		return fd;
+	if (! access(filename, F_OK))
+		return rsm_open_device(filename, fmode);
+	return -1;
 }
+#else
+#define snd_open_device(filename, fmode) open(filename, fmode);
+#endif
 
 /* make local functions really local */
 #define snd_dlobj_cache_lookup \

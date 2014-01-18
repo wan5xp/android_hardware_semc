@@ -506,6 +506,28 @@ static int snd_pcm_hw_delay(snd_pcm_t *pcm, snd_pcm_sframes_t *delayp)
 {
 	snd_pcm_hw_t *hw = pcm->private_data;
 	int fd = hw->fd, err;
+	if (hw->sync_ptr) {
+		err = sync_ptr1(hw, SNDRV_PCM_SYNC_PTR_HWSYNC);
+		if (err < 0)
+			return err;
+		switch (FAST_PCM_STATE(hw)) {
+		case SNDRV_PCM_STATE_RUNNING:
+		case SNDRV_PCM_STATE_DRAINING:
+		case SNDRV_PCM_STATE_PAUSED:
+		case SNDRV_PCM_STATE_PREPARED:
+		case SNDRV_PCM_STATE_SUSPENDED:
+			break;
+		case SNDRV_PCM_STATE_XRUN:
+			return -EPIPE;
+		default:
+			return -EBADFD;
+		}
+		if (pcm->stream == SND_PCM_STREAM_PLAYBACK)
+			*delayp = snd_pcm_mmap_playback_hw_avail(pcm);
+		else
+			*delayp = snd_pcm_mmap_capture_avail(pcm);
+		return 0;
+	}
 	if (ioctl(fd, SNDRV_PCM_IOCTL_DELAY, delayp) < 0) {
 		err = -errno;
 		SYSMSG("SNDRV_PCM_IOCTL_DELAY failed");
@@ -1142,6 +1164,18 @@ int snd_pcm_hw_open_fd(snd_pcm_t **pcmp, const char *name,
 		mode |= SND_PCM_NONBLOCK;
 	if (fmode & O_ASYNC)
 		mode |= SND_PCM_ASYNC;
+
+#if 0
+	/*
+	 * this is bogus, an application have to care about open filedescriptors
+	 */
+	if (fcntl(fd, F_SETFD, FD_CLOEXEC) != 0) {
+		ret = -errno;
+		SYSMSG("fcntl FD_CLOEXEC failed");
+		close(fd);
+		return ret;
+	}
+#endif
 
 	if (ioctl(fd, SNDRV_PCM_IOCTL_PVERSION, &ver) < 0) {
 		ret = -errno;

@@ -880,6 +880,15 @@ static void bt_hid_get_protocol(const void *buf, uint16_t len)
 
 	DBG("");
 
+	switch (cmd->mode) {
+	case HAL_HIDHOST_REPORT_PROTOCOL:
+	case HAL_HIDHOST_BOOT_PROTOCOL:
+		break;
+	default:
+		status = HAL_STATUS_INVALID;
+		goto failed;
+	}
+
 	android2bdaddr(&cmd->bdaddr, &dst);
 
 	l = g_slist_find_custom(devices, &dst, device_cmp);
@@ -925,6 +934,15 @@ static void bt_hid_set_protocol(const void *buf, uint16_t len)
 	uint8_t status;
 
 	DBG("");
+
+	switch (cmd->mode) {
+	case HAL_HIDHOST_REPORT_PROTOCOL:
+	case HAL_HIDHOST_BOOT_PROTOCOL:
+		break;
+	default:
+		status = HAL_STATUS_INVALID;
+		goto failed;
+	}
 
 	android2bdaddr(&cmd->bdaddr, &dst);
 
@@ -972,6 +990,16 @@ static void bt_hid_get_report(const void *buf, uint16_t len)
 	uint8_t status;
 
 	DBG("");
+
+	switch (cmd->type) {
+	case HAL_HIDHOST_INPUT_REPORT:
+	case HAL_HIDHOST_OUTPUT_REPORT:
+	case HAL_HIDHOST_FEATURE_REPORT:
+		break;
+	default:
+		status = HAL_STATUS_INVALID;
+		goto failed;
+	}
 
 	android2bdaddr(&cmd->bdaddr, &dst);
 
@@ -1034,6 +1062,16 @@ static void bt_hid_set_report(const void *buf, uint16_t len)
 									len);
 		raise(SIGTERM);
 		return;
+	}
+
+	switch (cmd->type) {
+	case HAL_HIDHOST_INPUT_REPORT:
+	case HAL_HIDHOST_OUTPUT_REPORT:
+	case HAL_HIDHOST_FEATURE_REPORT:
+		break;
+	default:
+		status = HAL_STATUS_INVALID;
+		goto failed;
 	}
 
 	android2bdaddr(&cmd->bdaddr, &dst);

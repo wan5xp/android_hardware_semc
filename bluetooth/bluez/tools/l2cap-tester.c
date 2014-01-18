@@ -62,6 +62,7 @@ struct l2cap_client_data {
 	uint16_t data_len;
 	const void *read_data;
 	const void *write_data;
+	bool enable_ssp;
 };
 
 struct l2cap_server_data {
@@ -75,6 +76,7 @@ struct l2cap_server_data {
 	uint16_t data_len;
 	const void *read_data;
 	const void *write_data;
+	bool enable_ssp;
 };
 
 static void mgmt_debug(const char *str, void *user_data)
@@ -256,6 +258,12 @@ static const struct l2cap_client_data client_connect_success_test = {
 	.server_psm = 0x1001,
 };
 
+static const struct l2cap_client_data client_connect_ssp_success_test = {
+	.client_psm = 0x1001,
+	.server_psm = 0x1001,
+	.enable_ssp = true,
+};
+
 static uint8_t l2_data[] = { 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08 };
 
 static const struct  l2cap_client_data client_connect_read_success_test = {
@@ -272,9 +280,20 @@ static const struct  l2cap_client_data client_connect_write_success_test = {
 	.data_len = sizeof(l2_data),
 };
 
-static const struct l2cap_client_data client_connect_nval_psm_test = {
+static const struct l2cap_client_data client_connect_nval_psm_test_1 = {
 	.client_psm = 0x1001,
 	.expect_err = ECONNREFUSED,
+};
+
+static const struct l2cap_client_data client_connect_nval_psm_test_2 = {
+	.client_psm = 0x0001,
+	.expect_err = ECONNREFUSED,
+};
+
+static const struct l2cap_client_data client_connect_nval_psm_test_3 = {
+	.client_psm = 0x0001,
+	.expect_err = ECONNREFUSED,
+	.enable_ssp = true,
 };
 
 static const uint8_t l2cap_connect_req[] = { 0x01, 0x10, 0x41, 0x00 };
@@ -305,6 +324,23 @@ static const struct l2cap_server_data l2cap_server_write_success_test = {
 	.expect_rsp_code = BT_L2CAP_PDU_CONN_RSP,
 	.write_data = l2_data,
 	.data_len = sizeof(l2_data),
+};
+
+static const uint8_t l2cap_sec_block_rsp[] = {	0x00, 0x00,	/* dcid */
+						0x41, 0x00,	/* scid */
+						0x03, 0x00,	/* Sec Block */
+						0x00, 0x00	/* status */
+					};
+
+static const struct l2cap_server_data l2cap_server_sec_block_test = {
+	.server_psm = 0x1001,
+	.send_req_code = BT_L2CAP_PDU_CONN_REQ,
+	.send_req = l2cap_connect_req,
+	.send_req_len = sizeof(l2cap_connect_req),
+	.expect_rsp_code = BT_L2CAP_PDU_CONN_RSP,
+	.expect_rsp = l2cap_sec_block_rsp,
+	.expect_rsp_len = sizeof(l2cap_sec_block_rsp),
+	.enable_ssp = true,
 };
 
 static const uint8_t l2cap_nval_psm_rsp[] = {	0x00, 0x00,	/* dcid */
@@ -385,19 +421,50 @@ static const struct l2cap_server_data le_server_success_test = {
 	.expect_rsp_code = BT_L2CAP_PDU_LE_CONN_RSP,
 };
 
-static void client_connectable_complete(uint16_t opcode, uint8_t status,
+static void client_cmd_complete(uint16_t opcode, uint8_t status,
 					const void *param, uint8_t len,
 					void *user_data)
 {
+	struct test_data *data = tester_get_data();
+	const struct l2cap_client_data *test = data->test_data;
+	struct bthost *bthost;
+
+	bthost = hciemu_client_get_host(data->hciemu);
+
 	switch (opcode) {
 	case BT_HCI_CMD_WRITE_SCAN_ENABLE:
 	case BT_HCI_CMD_LE_SET_ADV_ENABLE:
+		tester_print("Client set connectable status 0x%02x", status);
+		if (!status && test && test->enable_ssp) {
+			bthost_write_ssp_mode(bthost, 0x01);
+			return;
+		}
+		break;
+	case BT_HCI_CMD_WRITE_SIMPLE_PAIRING_MODE:
+		tester_print("Client enable SSP status 0x%02x", status);
 		break;
 	default:
 		return;
 	}
 
-	tester_print("Client set connectable status 0x%02x", status);
+
+	if (status)
+		tester_setup_failed();
+	else
+		tester_setup_complete();
+}
+
+static void server_cmd_complete(uint16_t opcode, uint8_t status,
+					const void *param, uint8_t len,
+					void *user_data)
+{
+	switch (opcode) {
+	case BT_HCI_CMD_WRITE_SIMPLE_PAIRING_MODE:
+		tester_print("Server enable SSP status 0x%02x", status);
+		break;
+	default:
+		return;
+	}
 
 	if (status)
 		tester_setup_failed();
@@ -419,7 +486,7 @@ static void setup_powered_client_callback(uint8_t status, uint16_t length,
 	tester_print("Controller powered on");
 
 	bthost = hciemu_client_get_host(data->hciemu);
-	bthost_set_cmd_complete_cb(bthost, client_connectable_complete, data);
+	bthost_set_cmd_complete_cb(bthost, client_cmd_complete, user_data);
 	if (data->hciemu_type == HCIEMU_TYPE_LE)
 		bthost_set_adv_enable(bthost, 0x01);
 	else
@@ -429,6 +496,10 @@ static void setup_powered_client_callback(uint8_t status, uint16_t length,
 static void setup_powered_server_callback(uint8_t status, uint16_t length,
 					const void *param, void *user_data)
 {
+	struct test_data *data = tester_get_data();
+	const struct l2cap_server_data *test = data->test_data;
+	struct bthost *bthost;
+
 	if (status != MGMT_STATUS_SUCCESS) {
 		tester_setup_failed();
 		return;
@@ -436,21 +507,34 @@ static void setup_powered_server_callback(uint8_t status, uint16_t length,
 
 	tester_print("Controller powered on");
 
-	tester_setup_complete();
+	if (!test->enable_ssp) {
+		tester_setup_complete();
+		return;
+	}
+
+	bthost = hciemu_client_get_host(data->hciemu);
+	bthost_set_cmd_complete_cb(bthost, server_cmd_complete, user_data);
+	bthost_write_ssp_mode(bthost, 0x01);
 }
 
 static void setup_powered_client(const void *test_data)
 {
 	struct test_data *data = tester_get_data();
+	const struct l2cap_client_data *test = data->test_data;
 	unsigned char param[] = { 0x01 };
 
 	tester_print("Powering on controller");
 
-	if (data->hciemu_type == HCIEMU_TYPE_BREDR)
-		mgmt_send(data->mgmt, MGMT_OP_SET_SSP, data->mgmt_index,
-				sizeof(param), param, NULL, NULL, NULL);
-	else
+	mgmt_send(data->mgmt, MGMT_OP_SET_PAIRABLE, data->mgmt_index,
+			sizeof(param), param,
+			NULL, NULL, NULL);
+
+	if (data->hciemu_type == HCIEMU_TYPE_LE)
 		mgmt_send(data->mgmt, MGMT_OP_SET_LE, data->mgmt_index,
+				sizeof(param), param, NULL, NULL, NULL);
+
+	if (test && test->enable_ssp)
+		mgmt_send(data->mgmt, MGMT_OP_SET_SSP, data->mgmt_index,
 				sizeof(param), param, NULL, NULL, NULL);
 
 	mgmt_send(data->mgmt, MGMT_OP_SET_POWERED, data->mgmt_index,
@@ -461,6 +545,7 @@ static void setup_powered_client(const void *test_data)
 static void setup_powered_server(const void *test_data)
 {
 	struct test_data *data = tester_get_data();
+	const struct l2cap_server_data *test = data->test_data;
 	unsigned char param[] = { 0x01 };
 
 	tester_print("Powering on controller");
@@ -469,14 +554,19 @@ static void setup_powered_server(const void *test_data)
 		mgmt_send(data->mgmt, MGMT_OP_SET_CONNECTABLE, data->mgmt_index,
 				sizeof(param), param,
 				NULL, NULL, NULL);
-		mgmt_send(data->mgmt, MGMT_OP_SET_SSP, data->mgmt_index,
-				sizeof(param), param, NULL, NULL, NULL);
+		if (test->enable_ssp)
+			mgmt_send(data->mgmt, MGMT_OP_SET_SSP,
+					data->mgmt_index, sizeof(param), param,
+					NULL, NULL, NULL);
 	} else {
 		mgmt_send(data->mgmt, MGMT_OP_SET_LE, data->mgmt_index,
 				sizeof(param), param, NULL, NULL, NULL);
 		mgmt_send(data->mgmt, MGMT_OP_SET_ADVERTISING, data->mgmt_index,
 				sizeof(param), param, NULL, NULL, NULL);
 	}
+
+	mgmt_send(data->mgmt, MGMT_OP_SET_PAIRABLE, data->mgmt_index,
+				sizeof(param), param, NULL, NULL, NULL);
 
 	mgmt_send(data->mgmt, MGMT_OP_SET_POWERED, data->mgmt_index,
 			sizeof(param), param, setup_powered_server_callback,
@@ -962,6 +1052,10 @@ int main(int argc, char *argv[])
 					&client_connect_success_test,
 					setup_powered_client, test_connect);
 
+	test_l2cap_bredr("L2CAP BR/EDR Client SSP - Success",
+					&client_connect_ssp_success_test,
+					setup_powered_client, test_connect);
+
 	test_l2cap_bredr("L2CAP BR/EDR Client - Read Success",
 					&client_connect_read_success_test,
 					setup_powered_client, test_connect);
@@ -970,8 +1064,16 @@ int main(int argc, char *argv[])
 					&client_connect_write_success_test,
 					setup_powered_client, test_connect);
 
-	test_l2cap_bredr("L2CAP BR/EDR Client - Invalid PSM",
-					&client_connect_nval_psm_test,
+	test_l2cap_bredr("L2CAP BR/EDR Client - Invalid PSM 1",
+					&client_connect_nval_psm_test_1,
+					setup_powered_client, test_connect);
+
+	test_l2cap_bredr("L2CAP BR/EDR Client - Invalid PSM 2",
+					&client_connect_nval_psm_test_2,
+					setup_powered_client, test_connect);
+
+	test_l2cap_bredr("L2CAP BR/EDR Client - Invalid PSM 3",
+					&client_connect_nval_psm_test_3,
 					setup_powered_client, test_connect);
 
 	test_l2cap_bredr("L2CAP BR/EDR Server - Success",
@@ -984,6 +1086,10 @@ int main(int argc, char *argv[])
 
 	test_l2cap_bredr("L2CAP BR/EDR Server - Write Success",
 					&l2cap_server_write_success_test,
+					setup_powered_server, test_server);
+
+	test_l2cap_bredr("L2CAP BR/EDR Server - Security Block",
+					&l2cap_server_sec_block_test,
 					setup_powered_server, test_server);
 
 	test_l2cap_bredr("L2CAP BR/EDR Server - Invalid PSM",

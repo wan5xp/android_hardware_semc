@@ -57,13 +57,9 @@ void *snd_dlopen(const char *name, int mode)
 #ifdef ANDROID
 		return RTLD_DEFAULT;
 #else
-		static const char * self = NULL;
-		if (self == NULL) {
-			Dl_info dlinfo;
-			if (dladdr(snd_dlopen, &dlinfo) > 0)
-				self = dlinfo.dli_fname;
-		}
-		name = self;
+		Dl_info dlinfo;
+		if (dladdr(snd_dlopen, &dlinfo) > 0)
+			name = dlinfo.dli_fname;
 #endif
 	}
 #endif

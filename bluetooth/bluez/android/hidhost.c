@@ -751,7 +751,7 @@ static void bt_hid_connect(const void *buf, uint16_t len)
 
 	bt_string2uuid(&uuid, HID_UUID);
 	if (bt_search_service(&adapter_addr, &dev->dst, &uuid,
-					hid_sdp_search_cb, dev, NULL) < 0) {
+					hid_sdp_search_cb, dev, NULL, 0) < 0) {
 		error("Failed to search sdp details");
 		hid_device_free(dev);
 		status = HAL_STATUS_FAILED;
@@ -899,11 +899,6 @@ static void bt_hid_get_protocol(const void *buf, uint16_t len)
 
 	dev = l->data;
 
-	if (dev->boot_dev) {
-		status = HAL_STATUS_UNSUPPORTED;
-		goto failed;
-	}
-
 	hdr = HID_MSG_GET_PROTOCOL | cmd->mode;
 	fd = g_io_channel_unix_get_fd(dev->ctrl_io);
 
@@ -953,11 +948,6 @@ static void bt_hid_set_protocol(const void *buf, uint16_t len)
 	}
 
 	dev = l->data;
-
-	if (dev->boot_dev) {
-		status = HAL_STATUS_UNSUPPORTED;
-		goto failed;
-	}
 
 	hdr = HID_MSG_SET_PROTOCOL | cmd->mode;
 	fd = g_io_channel_unix_get_fd(dev->ctrl_io);
@@ -1254,7 +1244,7 @@ static void connect_cb(GIOChannel *chan, GError *err, gpointer user_data)
 
 		bt_string2uuid(&uuid, HID_UUID);
 		if (bt_search_service(&src, &dev->dst, &uuid,
-					hid_sdp_search_cb, dev, NULL) < 0) {
+					hid_sdp_search_cb, dev, NULL, 0) < 0) {
 			error("failed to search sdp details");
 			hid_device_free(dev);
 			return;
@@ -1328,7 +1318,6 @@ static void free_hid_devices(gpointer data, gpointer user_data)
 {
 	struct hid_device *dev = data;
 
-	bt_hid_notify_state(dev, HAL_HIDHOST_STATE_DISCONNECTED);
 	hid_device_free(dev);
 }
 

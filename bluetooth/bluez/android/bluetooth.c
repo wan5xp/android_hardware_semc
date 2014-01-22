@@ -693,7 +693,7 @@ static void browse_cb(sdp_list_t *recs, int err, gpointer user_data)
 	if (uuid_list[req->search_uuid]) {
 		sdp_uuid16_create(&uuid, uuid_list[req->search_uuid++]);
 		bt_search_service(&adapter.bdaddr, &req->bdaddr, &uuid,
-						browse_cb, user_data, NULL);
+						browse_cb, user_data, NULL, 0);
 		return;
 	}
 
@@ -729,7 +729,7 @@ static uint8_t browse_remote_sdp(const bdaddr_t *addr)
 	sdp_uuid16_create(&uuid, uuid_list[req->search_uuid++]);
 
 	if (bt_search_service(&adapter.bdaddr,
-			&req->bdaddr, &uuid, browse_cb, req, NULL) < 0) {
+			&req->bdaddr, &uuid, browse_cb, req, NULL , 0) < 0) {
 		browse_req_free(req);
 		return HAL_STATUS_FAILED;
 	}
@@ -1064,7 +1064,8 @@ static void update_found_device(const bdaddr_t *bdaddr, uint8_t bdaddr_type,
 		(*num_prop)++;
 	}
 
-	ipc_send_notif(HAL_SERVICE_ID_BLUETOOTH, opcode, size, buf);
+	if (*num_prop)
+		ipc_send_notif(HAL_SERVICE_ID_BLUETOOTH, opcode, size, buf);
 
 	if (confirm) {
 		char addr[18];

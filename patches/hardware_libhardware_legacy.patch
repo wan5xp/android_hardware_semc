@@ -91,7 +91,7 @@ index 5663c6d..87a9257 100644
          && strcmp(supp_status, "stopped") == 0) {
          return 0;
      }
-+    
++
 +#ifdef USES_TI_MAC80211
 +    if (p2p_supported && add_remove_p2p_interface(0) < 0) {
 +      ALOGE("Wi-Fi - could not remove p2p interface");

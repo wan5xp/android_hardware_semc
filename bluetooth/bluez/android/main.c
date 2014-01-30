@@ -56,12 +56,6 @@
 #include "a2dp.h"
 #include "pan.h"
 
-/* TODO: Consider to remove PLATFORM_SDKVERSION check if requirement
-*  for minimal Android platform version increases. */
-#if defined(ANDROID) && PLATFORM_SDK_VERSION >= 18
-#include <sys/capability.h>
-#endif
-
 #define STARTUP_GRACE_SECONDS 5
 #define SHUTDOWN_GRACE_SECONDS 10
 

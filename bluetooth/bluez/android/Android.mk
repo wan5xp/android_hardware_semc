@@ -11,7 +11,7 @@ BLUEZ_COMMON_CFLAGS := -DVERSION=\"$(BLUEZ_VERSION)\" \
 	-DPLATFORM_SDK_VERSION=$(PLATFORM_SDK_VERSION) \
 	-DANDROID_STORAGEDIR=\"/data/misc/bluetooth\" \
 	-DHAVE_CONFIG_H \
-	-DANDROID
+	-DANDROID \
 
 # Disable warnings enabled by Android but not enabled in autotools build
 BLUEZ_COMMON_CFLAGS += -Wno-pointer-arith -Wno-missing-field-initializers
@@ -51,7 +51,7 @@ LOCAL_SRC_FILES := \
 	../profiles/network/bnep.c \
 
 LOCAL_C_INCLUDES := \
-	$(LOCAL_PATH)/../../glib/include
+	$(LOCAL_PATH)/../../glib/include \
 
 LOCAL_C_INCLUDES += \
 	$(LOCAL_PATH)/../ \
@@ -111,7 +111,7 @@ LOCAL_MODULE := bluetooth.default
 LOCAL_MODULE_PATH := $(TARGET_OUT_SHARED_LIBRARIES)/hw
 LOCAL_MODULE_TAGS := optional
 LOCAL_MODULE_CLASS := SHARED_LIBRARIES
-LOCAL_REQUIRED_MODULES := bluetoothd init.bluetooth.rc
+LOCAL_REQUIRED_MODULES := bluetoothd bluetoothd-snoop init.bluetooth.rc
 
 include $(BUILD_SHARED_LIBRARY)
 
@@ -134,14 +134,8 @@ LOCAL_SRC_FILES := \
 	client/if-hh.c \
 	client/if-pan.c \
 	client/if-sock.c \
+	client/if-gatt.c \
 	hal-utils.c \
-
-ANDROID_4_3_OR_ABOVE := $(shell echo 0 | awk -v v=$(PLATFORM_SDK_VERSION) 'END {print (v > 17) ? 1 : 0}')
-
-ifeq ($(ANDROID_4_3_OR_ABOVE), 1)
-LOCAL_SRC_FILES += \
-	client/if-gatt.c
-endif
 
 LOCAL_C_INCLUDES += \
 	$(call include-path-for, system-core) \
@@ -151,9 +145,75 @@ LOCAL_CFLAGS := $(BLUEZ_COMMON_CFLAGS)
 
 LOCAL_SHARED_LIBRARIES := libhardware
 
-LOCAL_MODULE_PATH := $(TARGET_OUT_OPTIONAL_EXECUTABLES)
-LOCAL_MODULE_TAGS := debug
+LOCAL_MODULE_PATH := $(TARGET_OUT_EXECUTABLES)
+LOCAL_MODULE_TAGS := optional
 LOCAL_MODULE := haltest
+
+include $(BUILD_EXECUTABLE)
+
+#
+# btmon
+#
+
+include $(CLEAR_VARS)
+
+LOCAL_SRC_FILES := \
+	../monitor/main.c \
+	../monitor/mainloop.c \
+	../monitor/display.c \
+	../monitor/hcidump.c \
+	../monitor/btsnoop.c \
+	../monitor/control.c \
+	../monitor/packet.c \
+	../monitor/l2cap.c \
+	../monitor/uuid.c \
+	../monitor/sdp.c \
+	../monitor/vendor.c \
+	../monitor/lmp.c \
+	../monitor/crc.c \
+	../monitor/ll.c \
+	../monitor/hwdb.c \
+	../monitor/ellisys.c \
+	../monitor/analyze.c \
+	../src/shared/util.c \
+	../src/shared/queue.c \
+	../lib/hci.c \
+	../lib/bluetooth.c \
+
+LOCAL_C_INCLUDES := \
+	$(LOCAL_PATH)/.. \
+	$(LOCAL_PATH)/../lib \
+	$(LOCAL_PATH)/../src/shared \
+	$(LOCAL_PATH)/../../glib/include \
+
+LOCAL_CFLAGS := $(BLUEZ_COMMON_CFLAGS)
+
+LOCAL_MODULE_PATH := $(TARGET_OUT_EXECUTABLES)
+LOCAL_MODULE_TAGS := optional
+LOCAL_MODULE := btmon
+
+include $(BUILD_EXECUTABLE)
+
+#
+# btproxy
+#
+
+include $(CLEAR_VARS)
+
+LOCAL_SRC_FILES := \
+	../tools/btproxy.c \
+	../monitor/mainloop.c \
+	../src/shared/util.c \
+
+LOCAL_C_INCLUDES := \
+	$(LOCAL_PATH)/.. \
+	$(LOCAL_PATH)/../src/shared \
+
+LOCAL_CFLAGS := $(BLUEZ_COMMON_CFLAGS)
+
+LOCAL_MODULE_PATH := $(TARGET_OUT_EXECUTABLES)
+LOCAL_MODULE_TAGS := optional
+LOCAL_MODULE := btproxy
 
 include $(BUILD_EXECUTABLE)
 
@@ -201,6 +261,28 @@ LOCAL_CFLAGS := $(BLUEZ_COMMON_CFLAGS)
 LOCAL_MODULE_PATH := $(TARGET_OUT_EXECUTABLES)
 LOCAL_MODULE_TAGS := optional
 LOCAL_MODULE := l2test
+
+include $(BUILD_EXECUTABLE)
+
+#
+# bluetoothd-snoop
+#
+
+include $(CLEAR_VARS)
+
+LOCAL_SRC_FILES := \
+	bluetoothd-snoop.c \
+	../monitor/mainloop.c \
+	../src/shared/btsnoop.c \
+
+LOCAL_C_INCLUDES := \
+	$(LOCAL_PATH)/.. \
+	$(LOCAL_PATH)/../lib \
+
+LOCAL_CFLAGS := $(BLUEZ_COMMON_CFLAGS)
+
+LOCAL_MODULE_TAGS := optional
+LOCAL_MODULE := bluetoothd-snoop
 
 include $(BUILD_EXECUTABLE)
 

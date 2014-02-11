@@ -1911,12 +1911,13 @@ diff --git a/frameworks/av/services/camera/libcameraservice/device1/CameraHardwa
 index 2bdf827..120be8d 100644
 --- a/frameworks/av/services/camera/libcameraservice/device1/CameraHardwareInterface.h
 +++ b/frameworks/av/services/camera/libcameraservice/device1/CameraHardwareInterface.h
-@@ -640,7 +640,7 @@ private:
+@@ -661,6 +661,9 @@ private:
  
      static int __set_usage(struct preview_stream_ops* w, int usage)
      {
--#ifdef HTC_3D_SUPPORT
-+#ifdef HTC_3D_SUPPORT || STE_HARDWARE
-         usage |= GRALLOC_USAGE_PRIVATE_0;
- #endif
++#ifdef STE_HARDWARE
++         usage |= GRALLOC_USAGE_PRIVATE_0;
++#endif
          ANativeWindow *a = anw(w);
+         return native_window_set_usage(a, usage);
+     }

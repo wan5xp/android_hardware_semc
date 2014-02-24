@@ -160,3 +160,32 @@ index 061c21d..ca975c5 100644
  } hwc_composer_device_1_t;
  
  /** convenience API for opening and closing a device */
+diff --git a/hardware/libhardware/include/hardware/bluetooth.h b/hardware/libhardware/include/hardware/bluetooth.h
+index 6c68e1e..309a5ad 100644
+--- a/hardware/libhardware/include/hardware/bluetooth.h
++++ b/hardware/libhardware/include/hardware/bluetooth.h
+@@ -285,7 +285,7 @@ typedef void (*discovery_state_changed_callback)(bt_discovery_state_t state);
+ 
+ /** Bluetooth Legacy PinKey Request callback */
+ typedef void (*pin_request_callback)(bt_bdaddr_t *remote_bd_addr,
+-                                        bt_bdname_t *bd_name, uint32_t cod, uint8_t secure);
++                                        bt_bdname_t *bd_name, uint32_t cod);
+ 
+ /** Bluetooth SSP Request callback - Just Works & Numeric Comparison*/
+ /** pass_key - Shall be 0 for BT_SSP_PAIRING_VARIANT_CONSENT &
+diff --git a/hardware/libhardware/include/hardware/bt_sock.h b/hardware/libhardware/include/hardware/bt_sock.h
+index ebcb255..a4aa046 100644
+--- a/hardware/libhardware/include/hardware/bt_sock.h
++++ b/hardware/libhardware/include/hardware/bt_sock.h
+@@ -19,9 +19,8 @@
+ 
+ __BEGIN_DECLS
+ 
+-#define BTSOCK_FLAG_ENCRYPT   (1)
+-#define BTSOCK_FLAG_AUTH      (1 << 1)
+-#define BTSOCK_FLAG_AUTH_HIGH (1 << 2)
++#define BTSOCK_FLAG_ENCRYPT 1
++#define BTSOCK_FLAG_AUTH (1 << 1)
+ 
+ typedef enum {
+     BTSOCK_RFCOMM = 1,

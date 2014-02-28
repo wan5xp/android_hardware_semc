@@ -128,7 +128,8 @@ index 1733b65..1868469 100644
 -           (void*)nativeSetDirtyRegion },
  };
 
- int register_android_view_Surface(JNIEnv* env)diff --git a/Android.mk b/Android.mk
+ int register_android_view_Surface(JNIEnv* env)
+diff --git a/frameworks/base/Android.mk b/frameworks/base/Android.mk
 index 91338ef..43a87ef 100644
 --- a/frameworks/base/Android.mk
 +++ b/frameworks/base/Android.mk

@@ -1,0 +1,72 @@
+From 36c0ce89112eb44a0e003f23daeb9bedbe402ad0 Mon Sep 17 00:00:00 2001
+From: Naveen Agarwal <naveen.agarwal@stericsson.com>
+Date: Fri, 6 Jul 2012 17:38:57 +0530
+Subject: [PATCH] FM Radio: Add support for FM Radio in Android
+
+Creating interface and framework for using FM Radio
+RX and TX from different vendors.
+
+Change-Id: I1a71aed01bfffdddfabf1cdfbfa3707cb1ed016b
+Signed-off-by: Benn Porscke <benn.porscke@stericsson.com>
+
+Conflicts:
+	include/system/audio.h
+---
+ include/system/audio.h | 13 +++++++++++++
+ 1 file changed, 13 insertions(+)
+
+diff --git a/include/system/audio.h b/include/system/audio.h
+index 8ff0cc3..56fd0ba 100644
+--- a/include/system/audio.h
++++ b/include/system/audio.h
+@@ -68,6 +68,7 @@ typedef enum {
+                                           /* An example of remote presentation is Wifi Display */
+                                           /*  where a dongle attached to a TV can be used to   */
+                                           /*  play the mix captured by this audio source.      */
++    AUDIO_SOURCE_FM_RADIO_RX         = 9,
+     AUDIO_SOURCE_CNT,
+     AUDIO_SOURCE_MAX                 = AUDIO_SOURCE_CNT - 1,
+ } audio_source_t;
+@@ -368,6 +369,9 @@ enum {
+     AUDIO_DEVICE_OUT_FM                        = 0x80000,
+     AUDIO_DEVICE_OUT_FM_TX                     = 0x100000,
+ #endif
++#ifdef STE_FM
++    AUDIO_DEVICE_OUT_FM_TX                     = 0x10000,
++#endif
+     AUDIO_DEVICE_OUT_DEFAULT                   = AUDIO_DEVICE_BIT_DEFAULT,
+     AUDIO_DEVICE_OUT_ALL      = (AUDIO_DEVICE_OUT_EARPIECE |
+                                  AUDIO_DEVICE_OUT_SPEAKER |
+@@ -392,6 +396,9 @@ enum {
+                                  AUDIO_DEVICE_OUT_FM |
+                                  AUDIO_DEVICE_OUT_FM_TX |
+ #endif
++#ifdef STE_FM
++                                 AUDIO_DEVICE_OUT_FM_TX |
++#endif
+                                  AUDIO_DEVICE_OUT_DEFAULT),
+     AUDIO_DEVICE_OUT_ALL_A2DP = (AUDIO_DEVICE_OUT_BLUETOOTH_A2DP |
+                                  AUDIO_DEVICE_OUT_BLUETOOTH_A2DP_HEADPHONES |
+@@ -438,6 +445,9 @@ enum {
+     AUDIO_DEVICE_IN_FM_RX                 = AUDIO_DEVICE_BIT_IN | 0x8000,
+     AUDIO_DEVICE_IN_FM_RX_A2DP            = AUDIO_DEVICE_BIT_IN | 0x10000,
+ #endif
++#ifdef STE_FM
++    AUDIO_DEVICE_IN_FM_RX                 = AUDIO_DEVICE_BIT_IN | 0x2000,
++#endif
+     AUDIO_DEVICE_IN_DEFAULT               = AUDIO_DEVICE_BIT_IN | AUDIO_DEVICE_BIT_DEFAULT,
+ #endif
+ 
+@@ -460,6 +470,9 @@ enum {
+                                AUDIO_DEVICE_IN_FM_RX_A2DP |
+                                AUDIO_DEVICE_IN_PROXY |
+ #endif
++#ifdef STE_FM
++                               AUDIO_DEVICE_IN_FM_RX |
++#endif
+                                AUDIO_DEVICE_IN_DEFAULT),
+     AUDIO_DEVICE_IN_ALL_SCO = AUDIO_DEVICE_IN_BLUETOOTH_SCO_HEADSET,
+ };
+-- 
+1.8.5.3
+

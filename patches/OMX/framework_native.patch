@@ -1,27 +1,3 @@
-#       modified:   include/binder/MemoryBase.h
-#       modified:   include/binder/Parcel.h
-#       modified:   include/gui/BufferQueue.h
-#       modified:   include/gui/ConsumerBase.h
-#       modified:   include/gui/GLConsumer.h
-#       modified:   include/gui/IGraphicBufferConsumer.h
-#       modified:   include/gui/IGraphicBufferProducer.h
-#       modified:   include/media/openmax/OMX_IVCommon.h
-#       modified:   include/ui/Fence.h
-#       modified:   include/ui/GraphicBuffer.h
-#       modified:   include/ui/PixelFormat.h
-#       modified:   include/ui/Region.h
-#       modified:   libs/binder/MemoryBase.cpp
-#       modified:   libs/binder/Parcel.cpp
-#       modified:   libs/gui/Android.mk
-#       modified:   libs/gui/GLConsumer.cpp
-#       modified:   libs/ui/PixelFormat.cpp
-#       modified:   opengl/include/EGL/eglext.h
-#       modified:   opengl/libs/EGL/eglApi.cpp
-#       modified:   opengl/libs/EGL/egl_entries.in
-#       modified:   services/surfaceflinger/Android.mk
-#       modified:   services/surfaceflinger/DisplayDevice.cpp
-#       modified:   services/surfaceflinger/DisplayDevice.h
-#       modified:   services/surfaceflinger/SurfaceFlinger.cpp
 diff --git a/frameworks/native/include/binder/MemoryBase.h b/frameworks/native/include/binder/MemoryBase.h
 index 463e26d..5bf104b 100644
 --- a/frameworks/native/include/binder/MemoryBase.h

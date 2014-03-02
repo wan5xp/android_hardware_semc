@@ -14,14 +14,11 @@ diff --git a/build/target/product/core_base.mk b/build/target/product/core_base.
 index 8c72fb8..da1abae 100644
 --- a/build/target/product/core_base.mk
 +++ b/build/target/product/core_base.mk
-@@ -34,6 +34,7 @@ PRODUCT_PACKAGES += \
-    libbcc \
-    libfilterpack_imageproc \
-    libgabi++ \
+@@ -32,6 +32,7 @@ PRODUCT_PACKAGES += \
+     libbcc \
+     libfilterpack_imageproc \
+     libgabi++ \
 +    libanalogradiobroadcasting \
-    libkeystore \
-    libmdnssd \
-    libnfc_ndef \
-
-
-
+     libkeystore \
+     libmdnssd \
+     libnfc_ndef \

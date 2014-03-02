@@ -1,125 +1,7 @@
-From 7973971018f9f4b180e5271bc4cc021ec2b3de98 Mon Sep 17 00:00:00 2001
-From: Stuart MacDonald <stuart.macdonald@stericsson.com>
-Date: Mon, 14 Mar 2011 15:14:54 +0100
-Subject: [PATCH] FM Radio: Add support for FM Radio in Android
-
-Two sample applications for the proposed FM Radio API.
-
-Change-Id: I8a0b0099f6ea20d9f53822127498d5e603eb3255
-
-Signed-off-by: Christian Bejram <christian.bejram@stericsson.com>
-
-Conflicts:
-	build/sdk.atree
-
-Conflicts:
-	build/sdk.atree
----
- build/sdk.atree                                    |   2 +
- samples/FmRadioReceiver/Android.mk                 |  10 +
- samples/FmRadioReceiver/AndroidManifest.xml        |  15 +
- samples/FmRadioReceiver/_index.html                |  15 +
- samples/FmRadioReceiver/res/drawable/backward.png  | Bin 0 -> 2589 bytes
- .../res/drawable/backwardbutton.xml                |   6 +
- .../FmRadioReceiver/res/drawable/backwardpress.png | Bin 0 -> 2836 bytes
- samples/FmRadioReceiver/res/drawable/forward.png   | Bin 0 -> 2914 bytes
- .../FmRadioReceiver/res/drawable/forwardbutton.xml |   6 +
- .../FmRadioReceiver/res/drawable/forwardpress.png  | Bin 0 -> 3130 bytes
- samples/FmRadioReceiver/res/drawable/icon.png      | Bin 0 -> 2574 bytes
- samples/FmRadioReceiver/res/drawable/pause.png     | Bin 0 -> 1690 bytes
- .../FmRadioReceiver/res/drawable/pausebutton.xml   |   6 +
- .../FmRadioReceiver/res/drawable/pausepress.png    | Bin 0 -> 1922 bytes
- samples/FmRadioReceiver/res/drawable/play.png      | Bin 0 -> 2409 bytes
- .../FmRadioReceiver/res/drawable/playbutton.xml    |   6 +
- samples/FmRadioReceiver/res/drawable/playpress.png | Bin 0 -> 2762 bytes
- samples/FmRadioReceiver/res/drawable/rescan.png    | Bin 0 -> 3510 bytes
- .../FmRadioReceiver/res/drawable/rescanbutton.xml  |   6 +
- .../FmRadioReceiver/res/drawable/rescanpress.png   | Bin 0 -> 3892 bytes
- samples/FmRadioReceiver/res/layout/main.xml        |  49 ++
- samples/FmRadioReceiver/res/values/strings.xml     |  12 +
- .../android/fmradioreceiver/FmRadioReceiver.java   | 518 +++++++++++++++++++++
- samples/FmRadioTransmitter/Android.mk              |  12 +
- samples/FmRadioTransmitter/AndroidManifest.xml     |  16 +
- samples/FmRadioTransmitter/_index.html             |  14 +
- samples/FmRadioTransmitter/res/drawable/anim.xml   |   7 +
- .../FmRadioTransmitter/res/drawable/backward.png   | Bin 0 -> 2589 bytes
- .../res/drawable/backwardbutton.xml                |   6 +
- .../res/drawable/backwardpress.png                 | Bin 0 -> 2836 bytes
- .../FmRadioTransmitter/res/drawable/forward.png    | Bin 0 -> 2914 bytes
- .../res/drawable/forwardbutton.xml                 |   6 +
- .../res/drawable/forwardpress.png                  | Bin 0 -> 3130 bytes
- samples/FmRadioTransmitter/res/drawable/icon.png   | Bin 0 -> 2574 bytes
- samples/FmRadioTransmitter/res/drawable/rescan.png | Bin 0 -> 3510 bytes
- .../res/drawable/rescanbutton.xml                  |   6 +
- .../res/drawable/rescanpress.png                   | Bin 0 -> 3892 bytes
- .../FmRadioTransmitter/res/drawable/transmit1.png  | Bin 0 -> 1674 bytes
- .../FmRadioTransmitter/res/drawable/transmit2.png  | Bin 0 -> 2954 bytes
- .../FmRadioTransmitter/res/drawable/transmit3.png  | Bin 0 -> 4833 bytes
- .../FmRadioTransmitter/res/drawable/transmit4.png  | Bin 0 -> 8037 bytes
- .../FmRadioTransmitter/res/drawable/transmitgo.png | Bin 0 -> 2827 bytes
- .../res/drawable/transmitgobutton.xml              |   6 +
- .../res/drawable/transmitgopress.png               | Bin 0 -> 3628 bytes
- .../res/drawable/transmitstop.png                  | Bin 0 -> 2385 bytes
- .../res/drawable/transmitstopbutton.xml            |   6 +
- .../res/drawable/transmitstoppress.png             | Bin 0 -> 2819 bytes
- samples/FmRadioTransmitter/res/layout/main.xml     |  43 ++
- samples/FmRadioTransmitter/res/values/strings.xml  |  10 +
- .../fmradiotransmitter/FmRadioTransmitter.java     | 384 +++++++++++++++
- 50 files changed, 1167 insertions(+)
- create mode 100755 samples/FmRadioReceiver/Android.mk
- create mode 100755 samples/FmRadioReceiver/AndroidManifest.xml
- create mode 100755 samples/FmRadioReceiver/_index.html
- create mode 100755 samples/FmRadioReceiver/res/drawable/backward.png
- create mode 100755 samples/FmRadioReceiver/res/drawable/backwardbutton.xml
- create mode 100755 samples/FmRadioReceiver/res/drawable/backwardpress.png
- create mode 100755 samples/FmRadioReceiver/res/drawable/forward.png
- create mode 100755 samples/FmRadioReceiver/res/drawable/forwardbutton.xml
- create mode 100755 samples/FmRadioReceiver/res/drawable/forwardpress.png
- create mode 100755 samples/FmRadioReceiver/res/drawable/icon.png
- create mode 100755 samples/FmRadioReceiver/res/drawable/pause.png
- create mode 100755 samples/FmRadioReceiver/res/drawable/pausebutton.xml
- create mode 100755 samples/FmRadioReceiver/res/drawable/pausepress.png
- create mode 100755 samples/FmRadioReceiver/res/drawable/play.png
- create mode 100755 samples/FmRadioReceiver/res/drawable/playbutton.xml
- create mode 100755 samples/FmRadioReceiver/res/drawable/playpress.png
- create mode 100755 samples/FmRadioReceiver/res/drawable/rescan.png
- create mode 100755 samples/FmRadioReceiver/res/drawable/rescanbutton.xml
- create mode 100755 samples/FmRadioReceiver/res/drawable/rescanpress.png
- create mode 100755 samples/FmRadioReceiver/res/layout/main.xml
- create mode 100755 samples/FmRadioReceiver/res/values/strings.xml
- create mode 100755 samples/FmRadioReceiver/src/com/example/android/fmradioreceiver/FmRadioReceiver.java
- create mode 100755 samples/FmRadioTransmitter/Android.mk
- create mode 100755 samples/FmRadioTransmitter/AndroidManifest.xml
- create mode 100755 samples/FmRadioTransmitter/_index.html
- create mode 100755 samples/FmRadioTransmitter/res/drawable/anim.xml
- create mode 100755 samples/FmRadioTransmitter/res/drawable/backward.png
- create mode 100755 samples/FmRadioTransmitter/res/drawable/backwardbutton.xml
- create mode 100755 samples/FmRadioTransmitter/res/drawable/backwardpress.png
- create mode 100755 samples/FmRadioTransmitter/res/drawable/forward.png
- create mode 100755 samples/FmRadioTransmitter/res/drawable/forwardbutton.xml
- create mode 100755 samples/FmRadioTransmitter/res/drawable/forwardpress.png
- create mode 100755 samples/FmRadioTransmitter/res/drawable/icon.png
- create mode 100755 samples/FmRadioTransmitter/res/drawable/rescan.png
- create mode 100755 samples/FmRadioTransmitter/res/drawable/rescanbutton.xml
- create mode 100755 samples/FmRadioTransmitter/res/drawable/rescanpress.png
- create mode 100755 samples/FmRadioTransmitter/res/drawable/transmit1.png
- create mode 100755 samples/FmRadioTransmitter/res/drawable/transmit2.png
- create mode 100755 samples/FmRadioTransmitter/res/drawable/transmit3.png
- create mode 100755 samples/FmRadioTransmitter/res/drawable/transmit4.png
- create mode 100755 samples/FmRadioTransmitter/res/drawable/transmitgo.png
- create mode 100755 samples/FmRadioTransmitter/res/drawable/transmitgobutton.xml
- create mode 100755 samples/FmRadioTransmitter/res/drawable/transmitgopress.png
- create mode 100755 samples/FmRadioTransmitter/res/drawable/transmitstop.png
- create mode 100755 samples/FmRadioTransmitter/res/drawable/transmitstopbutton.xml
- create mode 100755 samples/FmRadioTransmitter/res/drawable/transmitstoppress.png
- create mode 100755 samples/FmRadioTransmitter/res/layout/main.xml
- create mode 100755 samples/FmRadioTransmitter/res/values/strings.xml
- create mode 100755 samples/FmRadioTransmitter/src/com/example/android/fmradiotransmitter/FmRadioTransmitter.java
-
-diff --git a/build/sdk.atree b/build/sdk.atree
+diff --git a/development/build/sdk.atree b/development/build/sdk.atree
 index fe9c3cf..83ccedc 100644
---- a/build/sdk.atree
-+++ b/build/sdk.atree
+--- a/development/build/sdk.atree
++++ b/development/build/sdk.atree
 @@ -206,6 +206,8 @@ development/samples/Wiktionary                 samples/${PLATFORM_NAME}/Wiktiona
  development/samples/WiktionarySimple           samples/${PLATFORM_NAME}/WiktionarySimple
  development/samples/XmlAdapters                samples/${PLATFORM_NAME}/XmlAdapters
@@ -129,11 +11,11 @@ index fe9c3cf..83ccedc 100644
  
  # NOTICE files are copied by build/core/Makefile from sdk.git
  sdk/files/sdk_files_NOTICE.txt samples/${PLATFORM_NAME}/NOTICE.txt
-diff --git a/samples/FmRadioReceiver/Android.mk b/samples/FmRadioReceiver/Android.mk
+diff --git a/development/samples/FmRadioReceiver/Android.mk b/development/samples/FmRadioReceiver/Android.mk
 new file mode 100755
 index 0000000..177ce93
 --- /dev/null
-+++ b/samples/FmRadioReceiver/Android.mk
++++ b/development/samples/FmRadioReceiver/Android.mk
 @@ -0,0 +1,10 @@
 +LOCAL_PATH:= $(call my-dir)
 +include $(CLEAR_VARS)
@@ -145,11 +27,11 @@ index 0000000..177ce93
 +LOCAL_PACKAGE_NAME := FmRadioReceiver
 +
 +include $(BUILD_PACKAGE)
-diff --git a/samples/FmRadioReceiver/AndroidManifest.xml b/samples/FmRadioReceiver/AndroidManifest.xml
+diff --git a/development/samples/FmRadioReceiver/AndroidManifest.xml b/development/samples/FmRadioReceiver/AndroidManifest.xml
 new file mode 100755
 index 0000000..f1aae65
 --- /dev/null
-+++ b/samples/FmRadioReceiver/AndroidManifest.xml
++++ b/development/samples/FmRadioReceiver/AndroidManifest.xml
 @@ -0,0 +1,15 @@
 +<?xml version="1.0" encoding="utf-8"?>
 +<manifest xmlns:android="http://schemas.android.com/apk/res/android"
@@ -166,11 +48,11 @@ index 0000000..f1aae65
 +	<uses-permission android:name="com.stericsson.permission.FM_RADIO_TRANSMITTER"></uses-permission>
 +	<uses-permission android:name="com.stericsson.permission.FM_RADIO_RECEIVER"></uses-permission>
 +</manifest>
-diff --git a/samples/FmRadioReceiver/_index.html b/samples/FmRadioReceiver/_index.html
+diff --git a/development/samples/FmRadioReceiver/_index.html b/development/samples/FmRadioReceiver/_index.html
 new file mode 100755
 index 0000000..080591e
 --- /dev/null
-+++ b/samples/FmRadioReceiver/_index.html
++++ b/development/samples/FmRadioReceiver/_index.html
 @@ -0,0 +1,15 @@
 +<p>FmRadioReceiver is a sample application that demonstrates the use of the
 +<a href="../../../reference/android/fm/FmReceiver.html">android.fm.FmReceiver</a>
@@ -187,7 +69,7 @@ index 0000000..080591e
 +<a href="../../../reference/android/fm/FmTransmitter.html">FmTransmitter</a></p>
 +
 +<img alt="" src="../images/FmRadioReceiver.png"  />
-diff --git a/samples/FmRadioReceiver/res/drawable/backward.png b/samples/FmRadioReceiver/res/drawable/backward.png
+diff --git a/development/samples/FmRadioReceiver/res/drawable/backward.png b/development/samples/FmRadioReceiver/res/drawable/backward.png
 new file mode 100755
 index 0000000000000000000000000000000000000000..c53408f3aa960e995bafd810af75ac2c8af632ce
 GIT binary patch
@@ -246,11 +128,11 @@ zrPbHhm*nz4H%X=iF8(KPch4wR6zFbj{}*5YQ5!-x&<wWA00000NkvXXu0mjftQzMy
 literal 0
 HcmV?d00001
 
-diff --git a/samples/FmRadioReceiver/res/drawable/backwardbutton.xml b/samples/FmRadioReceiver/res/drawable/backwardbutton.xml
+diff --git a/development/samples/FmRadioReceiver/res/drawable/backwardbutton.xml b/development/samples/FmRadioReceiver/res/drawable/backwardbutton.xml
 new file mode 100755
 index 0000000..22ff201
 --- /dev/null
-+++ b/samples/FmRadioReceiver/res/drawable/backwardbutton.xml
++++ b/development/samples/FmRadioReceiver/res/drawable/backwardbutton.xml
 @@ -0,0 +1,6 @@
 +<?xml version="1.0" encoding="utf-8"?>
 +<selector xmlns:android="http://schemas.android.com/apk/res/android">
@@ -259,7 +141,7 @@ index 0000000..22ff201
 +	<item android:drawable="@drawable/backward" />
 +</selector>
 \ No newline at end of file
-diff --git a/samples/FmRadioReceiver/res/drawable/backwardpress.png b/samples/FmRadioReceiver/res/drawable/backwardpress.png
+diff --git a/development/samples/FmRadioReceiver/res/drawable/backwardpress.png b/development/samples/FmRadioReceiver/res/drawable/backwardpress.png
 new file mode 100755
 index 0000000000000000000000000000000000000000..3fcfada1861c23c77472928486f32af920ba0100
 GIT binary patch
@@ -323,7 +205,7 @@ m7YO8b6l{tWO571BL;MGf)J$hpC9;tK0000<MNUMnLSTZsqFXlr
 literal 0
 HcmV?d00001
 
-diff --git a/samples/FmRadioReceiver/res/drawable/forward.png b/samples/FmRadioReceiver/res/drawable/forward.png
+diff --git a/development/samples/FmRadioReceiver/res/drawable/forward.png b/development/samples/FmRadioReceiver/res/drawable/forward.png
 new file mode 100755
 index 0000000000000000000000000000000000000000..a3f6a75f857fcc195ca318caaa85643c3f803e63
 GIT binary patch
@@ -389,11 +271,11 @@ M07*qoM6N<$f@>>q3;+NC
 literal 0
 HcmV?d00001
 
-diff --git a/samples/FmRadioReceiver/res/drawable/forwardbutton.xml b/samples/FmRadioReceiver/res/drawable/forwardbutton.xml
+diff --git a/development/samples/FmRadioReceiver/res/drawable/forwardbutton.xml b/development/samples/FmRadioReceiver/res/drawable/forwardbutton.xml
 new file mode 100755
 index 0000000..bbefffc
 --- /dev/null
-+++ b/samples/FmRadioReceiver/res/drawable/forwardbutton.xml
++++ b/development/samples/FmRadioReceiver/res/drawable/forwardbutton.xml
 @@ -0,0 +1,6 @@
 +<?xml version="1.0" encoding="utf-8"?>
 +<selector xmlns:android="http://schemas.android.com/apk/res/android">
@@ -402,7 +284,7 @@ index 0000000..bbefffc
 +	<item android:drawable="@drawable/forward" />
 +</selector>
 \ No newline at end of file
-diff --git a/samples/FmRadioReceiver/res/drawable/forwardpress.png b/samples/FmRadioReceiver/res/drawable/forwardpress.png
+diff --git a/development/samples/FmRadioReceiver/res/drawable/forwardpress.png b/development/samples/FmRadioReceiver/res/drawable/forwardpress.png
 new file mode 100755
 index 0000000000000000000000000000000000000000..417b99db625d08269cbff38a781d1180f062d7d6
 GIT binary patch
@@ -472,7 +354,7 @@ Ug1I1zZ~y=R07*qoM6N<$f{0Mm{{R30
 literal 0
 HcmV?d00001
 
-diff --git a/samples/FmRadioReceiver/res/drawable/icon.png b/samples/FmRadioReceiver/res/drawable/icon.png
+diff --git a/development/samples/FmRadioReceiver/res/drawable/icon.png b/development/samples/FmRadioReceiver/res/drawable/icon.png
 new file mode 100755
 index 0000000000000000000000000000000000000000..a07c69fa5a0f4da5d5efe96eea12a543154dbab6
 GIT binary patch
@@ -531,7 +413,7 @@ kfM{AOIT6Hei<0X907#l7&=u{JbN~PV07*qoM6N<$f*QKj`~Uy|
 literal 0
 HcmV?d00001
 
-diff --git a/samples/FmRadioReceiver/res/drawable/pause.png b/samples/FmRadioReceiver/res/drawable/pause.png
+diff --git a/development/samples/FmRadioReceiver/res/drawable/pause.png b/development/samples/FmRadioReceiver/res/drawable/pause.png
 new file mode 100755
 index 0000000000000000000000000000000000000000..ff5ffd71fad0445e977bdd2d0eea468bc6c1f3cf
 GIT binary patch
@@ -573,11 +455,11 @@ kJ80i_2kj10+&&2~0M?p;RCC~YPyhe`07*qoM6N<$g1VeU3jhEB
 literal 0
 HcmV?d00001
 
-diff --git a/samples/FmRadioReceiver/res/drawable/pausebutton.xml b/samples/FmRadioReceiver/res/drawable/pausebutton.xml
+diff --git a/development/samples/FmRadioReceiver/res/drawable/pausebutton.xml b/development/samples/FmRadioReceiver/res/drawable/pausebutton.xml
 new file mode 100755
 index 0000000..92b7c89
 --- /dev/null
-+++ b/samples/FmRadioReceiver/res/drawable/pausebutton.xml
++++ b/development/samples/FmRadioReceiver/res/drawable/pausebutton.xml
 @@ -0,0 +1,6 @@
 +<?xml version="1.0" encoding="utf-8"?>
 +<selector xmlns:android="http://schemas.android.com/apk/res/android">
@@ -586,7 +468,7 @@ index 0000000..92b7c89
 +	<item android:drawable="@drawable/pause" />
 +</selector>
 \ No newline at end of file
-diff --git a/samples/FmRadioReceiver/res/drawable/pausepress.png b/samples/FmRadioReceiver/res/drawable/pausepress.png
+diff --git a/development/samples/FmRadioReceiver/res/drawable/pausepress.png b/development/samples/FmRadioReceiver/res/drawable/pausepress.png
 new file mode 100755
 index 0000000000000000000000000000000000000000..e4d978ca00c403b52210845459e359671f1b1700
 GIT binary patch
@@ -633,7 +515,7 @@ IM6N<$g8Q<R4gdfE
 literal 0
 HcmV?d00001
 
-diff --git a/samples/FmRadioReceiver/res/drawable/play.png b/samples/FmRadioReceiver/res/drawable/play.png
+diff --git a/development/samples/FmRadioReceiver/res/drawable/play.png b/development/samples/FmRadioReceiver/res/drawable/play.png
 new file mode 100755
 index 0000000000000000000000000000000000000000..5b77d3b7577eef6cdd76da70145a0c236834026e
 GIT binary patch
@@ -689,11 +571,11 @@ bUw{Ds5k>3UoXbZn00000NkvXXu0mjfh{<z)
 literal 0
 HcmV?d00001
 
-diff --git a/samples/FmRadioReceiver/res/drawable/playbutton.xml b/samples/FmRadioReceiver/res/drawable/playbutton.xml
+diff --git a/development/samples/FmRadioReceiver/res/drawable/playbutton.xml b/development/samples/FmRadioReceiver/res/drawable/playbutton.xml
 new file mode 100755
 index 0000000..12ba91e
 --- /dev/null
-+++ b/samples/FmRadioReceiver/res/drawable/playbutton.xml
++++ b/development/samples/FmRadioReceiver/res/drawable/playbutton.xml
 @@ -0,0 +1,6 @@
 +<?xml version="1.0" encoding="utf-8"?>
 +<selector xmlns:android="http://schemas.android.com/apk/res/android">
@@ -702,7 +584,7 @@ index 0000000..12ba91e
 +	<item android:drawable="@drawable/play" />
 +</selector>
 \ No newline at end of file
-diff --git a/samples/FmRadioReceiver/res/drawable/playpress.png b/samples/FmRadioReceiver/res/drawable/playpress.png
+diff --git a/development/samples/FmRadioReceiver/res/drawable/playpress.png b/development/samples/FmRadioReceiver/res/drawable/playpress.png
 new file mode 100755
 index 0000000000000000000000000000000000000000..c0063c7c26f4253635f2707e054c5d248940f08a
 GIT binary patch
@@ -765,7 +647,7 @@ Q>Hq)$07*qoM6N<$f)hF>BLDyZ
 literal 0
 HcmV?d00001
 
-diff --git a/samples/FmRadioReceiver/res/drawable/rescan.png b/samples/FmRadioReceiver/res/drawable/rescan.png
+diff --git a/development/samples/FmRadioReceiver/res/drawable/rescan.png b/development/samples/FmRadioReceiver/res/drawable/rescan.png
 new file mode 100755
 index 0000000000000000000000000000000000000000..2d2cc2aa182e05fb783a1fbd639f7a08426a9a5b
 GIT binary patch
@@ -842,11 +724,11 @@ k0Hu}`pcJ5mF8>o?0QlE~d;-n3IRF3v07*qoM6N<$f@vY02><{9
 literal 0
 HcmV?d00001
 
-diff --git a/samples/FmRadioReceiver/res/drawable/rescanbutton.xml b/samples/FmRadioReceiver/res/drawable/rescanbutton.xml
+diff --git a/development/samples/FmRadioReceiver/res/drawable/rescanbutton.xml b/development/samples/FmRadioReceiver/res/drawable/rescanbutton.xml
 new file mode 100755
 index 0000000..9585ff5
 --- /dev/null
-+++ b/samples/FmRadioReceiver/res/drawable/rescanbutton.xml
++++ b/development/samples/FmRadioReceiver/res/drawable/rescanbutton.xml
 @@ -0,0 +1,6 @@
 +<?xml version="1.0" encoding="utf-8"?>
 +<selector xmlns:android="http://schemas.android.com/apk/res/android">
@@ -855,7 +737,7 @@ index 0000000..9585ff5
 +	<item android:drawable="@drawable/rescan" />
 +</selector>
 \ No newline at end of file
-diff --git a/samples/FmRadioReceiver/res/drawable/rescanpress.png b/samples/FmRadioReceiver/res/drawable/rescanpress.png
+diff --git a/development/samples/FmRadioReceiver/res/drawable/rescanpress.png b/development/samples/FmRadioReceiver/res/drawable/rescanpress.png
 new file mode 100755
 index 0000000000000000000000000000000000000000..a03ce7aaf0b583b9b854a2420cd62c4109fe7ab0
 GIT binary patch
@@ -940,11 +822,11 @@ C9bt6<
 literal 0
 HcmV?d00001
 
-diff --git a/samples/FmRadioReceiver/res/layout/main.xml b/samples/FmRadioReceiver/res/layout/main.xml
+diff --git a/development/samples/FmRadioReceiver/res/layout/main.xml b/development/samples/FmRadioReceiver/res/layout/main.xml
 new file mode 100755
 index 0000000..355823d
 --- /dev/null
-+++ b/samples/FmRadioReceiver/res/layout/main.xml
++++ b/development/samples/FmRadioReceiver/res/layout/main.xml
 @@ -0,0 +1,49 @@
 +<?xml version="1.0" encoding="utf-8"?>
 +<LinearLayout android:layout_width="fill_parent"
@@ -996,11 +878,11 @@ index 0000000..355823d
 +	</LinearLayout>
 +</LinearLayout> 
 \ No newline at end of file
-diff --git a/samples/FmRadioReceiver/res/values/strings.xml b/samples/FmRadioReceiver/res/values/strings.xml
+diff --git a/development/samples/FmRadioReceiver/res/values/strings.xml b/development/samples/FmRadioReceiver/res/values/strings.xml
 new file mode 100755
 index 0000000..ec714c2
 --- /dev/null
-+++ b/samples/FmRadioReceiver/res/values/strings.xml
++++ b/development/samples/FmRadioReceiver/res/values/strings.xml
 @@ -0,0 +1,12 @@
 +<?xml version="1.0" encoding="utf-8"?>
 +<resources>
@@ -1014,11 +896,11 @@ index 0000000..ec714c2
 +	<string name="fmradio">FM RADIO</string>
 +	<string name="dashes">- - - -</string>
 +</resources>
-diff --git a/samples/FmRadioReceiver/src/com/example/android/fmradioreceiver/FmRadioReceiver.java b/samples/FmRadioReceiver/src/com/example/android/fmradioreceiver/FmRadioReceiver.java
+diff --git a/development/samples/FmRadioReceiver/src/com/example/android/fmradioreceiver/FmRadioReceiver.java b/development/samples/FmRadioReceiver/src/com/example/android/fmradioreceiver/FmRadioReceiver.java
 new file mode 100755
 index 0000000..269dd84
 --- /dev/null
-+++ b/samples/FmRadioReceiver/src/com/example/android/fmradioreceiver/FmRadioReceiver.java
++++ b/development/samples/FmRadioReceiver/src/com/example/android/fmradioreceiver/FmRadioReceiver.java
 @@ -0,0 +1,518 @@
 +/*
 + * Copyright (C) 2011 The Android Open Source Project
@@ -1538,11 +1420,11 @@ index 0000000..269dd84
 +        return super.onOptionsItemSelected(item);
 +    }
 +}
-diff --git a/samples/FmRadioTransmitter/Android.mk b/samples/FmRadioTransmitter/Android.mk
+diff --git a/development/samples/FmRadioTransmitter/Android.mk b/development/samples/FmRadioTransmitter/Android.mk
 new file mode 100755
 index 0000000..0c25b35
 --- /dev/null
-+++ b/samples/FmRadioTransmitter/Android.mk
++++ b/development/samples/FmRadioTransmitter/Android.mk
 @@ -0,0 +1,12 @@
 +LOCAL_PATH:= $(call my-dir)
 +include $(CLEAR_VARS)
@@ -1556,11 +1438,11 @@ index 0000000..0c25b35
 +LOCAL_SDK_VERSION := current
 +
 +include $(BUILD_PACKAGE)
-diff --git a/samples/FmRadioTransmitter/AndroidManifest.xml b/samples/FmRadioTransmitter/AndroidManifest.xml
+diff --git a/development/samples/FmRadioTransmitter/AndroidManifest.xml b/development/samples/FmRadioTransmitter/AndroidManifest.xml
 new file mode 100755
 index 0000000..ec0d336
 --- /dev/null
-+++ b/samples/FmRadioTransmitter/AndroidManifest.xml
++++ b/development/samples/FmRadioTransmitter/AndroidManifest.xml
 @@ -0,0 +1,16 @@
 +<?xml version="1.0" encoding="utf-8"?>
 +<manifest xmlns:android="http://schemas.android.com/apk/res/android"
@@ -1579,11 +1461,11 @@ index 0000000..ec0d336
 +	<uses-permission android:name="android.permission.FM_RADIO_RECEIVER"></uses-permission>
 +</manifest> 
 \ No newline at end of file
-diff --git a/samples/FmRadioTransmitter/_index.html b/samples/FmRadioTransmitter/_index.html
+diff --git a/development/samples/FmRadioTransmitter/_index.html b/development/samples/FmRadioTransmitter/_index.html
 new file mode 100755
 index 0000000..0a286e2
 --- /dev/null
-+++ b/samples/FmRadioTransmitter/_index.html
++++ b/development/samples/FmRadioTransmitter/_index.html
 @@ -0,0 +1,14 @@
 +<p>FmRadioTransmitter is a sample application that demonstrates the use of the
 +<a href="../../../reference/android/fm/FmTransmitter.html">android.fm.FmTransmitter</a>
@@ -1599,11 +1481,11 @@ index 0000000..0a286e2
 +<a href="../../../reference/android/fm/FmReceiver.html">FmReceiver</a></p>
 +
 +<img alt="" src="../images/FmRadioTransmitter.png"  />
-diff --git a/samples/FmRadioTransmitter/res/drawable/anim.xml b/samples/FmRadioTransmitter/res/drawable/anim.xml
+diff --git a/development/samples/FmRadioTransmitter/res/drawable/anim.xml b/development/samples/FmRadioTransmitter/res/drawable/anim.xml
 new file mode 100755
 index 0000000..4a06a4f
 --- /dev/null
-+++ b/samples/FmRadioTransmitter/res/drawable/anim.xml
++++ b/development/samples/FmRadioTransmitter/res/drawable/anim.xml
 @@ -0,0 +1,7 @@
 +<animation-list xmlns:android="http://schemas.android.com/apk/res/android"
 +    android:oneshot="false">
@@ -1613,7 +1495,7 @@ index 0000000..4a06a4f
 +    <item android:drawable="@drawable/transmit4" android:duration="200" />
 +</animation-list>
 \ No newline at end of file
-diff --git a/samples/FmRadioTransmitter/res/drawable/backward.png b/samples/FmRadioTransmitter/res/drawable/backward.png
+diff --git a/development/samples/FmRadioTransmitter/res/drawable/backward.png b/development/samples/FmRadioTransmitter/res/drawable/backward.png
 new file mode 100755
 index 0000000000000000000000000000000000000000..c53408f3aa960e995bafd810af75ac2c8af632ce
 GIT binary patch
@@ -1672,11 +1554,11 @@ zrPbHhm*nz4H%X=iF8(KPch4wR6zFbj{}*5YQ5!-x&<wWA00000NkvXXu0mjftQzMy
 literal 0
 HcmV?d00001
 
-diff --git a/samples/FmRadioTransmitter/res/drawable/backwardbutton.xml b/samples/FmRadioTransmitter/res/drawable/backwardbutton.xml
+diff --git a/development/samples/FmRadioTransmitter/res/drawable/backwardbutton.xml b/development/samples/FmRadioTransmitter/res/drawable/backwardbutton.xml
 new file mode 100755
 index 0000000..22ff201
 --- /dev/null
-+++ b/samples/FmRadioTransmitter/res/drawable/backwardbutton.xml
++++ b/development/samples/FmRadioTransmitter/res/drawable/backwardbutton.xml
 @@ -0,0 +1,6 @@
 +<?xml version="1.0" encoding="utf-8"?>
 +<selector xmlns:android="http://schemas.android.com/apk/res/android">
@@ -1685,7 +1567,7 @@ index 0000000..22ff201
 +	<item android:drawable="@drawable/backward" />
 +</selector>
 \ No newline at end of file
-diff --git a/samples/FmRadioTransmitter/res/drawable/backwardpress.png b/samples/FmRadioTransmitter/res/drawable/backwardpress.png
+diff --git a/development/samples/FmRadioTransmitter/res/drawable/backwardpress.png b/development/samples/FmRadioTransmitter/res/drawable/backwardpress.png
 new file mode 100755
 index 0000000000000000000000000000000000000000..3fcfada1861c23c77472928486f32af920ba0100
 GIT binary patch
@@ -1749,7 +1631,7 @@ m7YO8b6l{tWO571BL;MGf)J$hpC9;tK0000<MNUMnLSTZsqFXlr
 literal 0
 HcmV?d00001
 
-diff --git a/samples/FmRadioTransmitter/res/drawable/forward.png b/samples/FmRadioTransmitter/res/drawable/forward.png
+diff --git a/development/samples/FmRadioTransmitter/res/drawable/forward.png b/development/samples/FmRadioTransmitter/res/drawable/forward.png
 new file mode 100755
 index 0000000000000000000000000000000000000000..a3f6a75f857fcc195ca318caaa85643c3f803e63
 GIT binary patch
@@ -1815,11 +1697,11 @@ M07*qoM6N<$f@>>q3;+NC
 literal 0
 HcmV?d00001
 
-diff --git a/samples/FmRadioTransmitter/res/drawable/forwardbutton.xml b/samples/FmRadioTransmitter/res/drawable/forwardbutton.xml
+diff --git a/development/samples/FmRadioTransmitter/res/drawable/forwardbutton.xml b/development/samples/FmRadioTransmitter/res/drawable/forwardbutton.xml
 new file mode 100755
 index 0000000..bbefffc
 --- /dev/null
-+++ b/samples/FmRadioTransmitter/res/drawable/forwardbutton.xml
++++ b/development/samples/FmRadioTransmitter/res/drawable/forwardbutton.xml
 @@ -0,0 +1,6 @@
 +<?xml version="1.0" encoding="utf-8"?>
 +<selector xmlns:android="http://schemas.android.com/apk/res/android">
@@ -1828,7 +1710,7 @@ index 0000000..bbefffc
 +	<item android:drawable="@drawable/forward" />
 +</selector>
 \ No newline at end of file
-diff --git a/samples/FmRadioTransmitter/res/drawable/forwardpress.png b/samples/FmRadioTransmitter/res/drawable/forwardpress.png
+diff --git a/development/samples/FmRadioTransmitter/res/drawable/forwardpress.png b/development/samples/FmRadioTransmitter/res/drawable/forwardpress.png
 new file mode 100755
 index 0000000000000000000000000000000000000000..417b99db625d08269cbff38a781d1180f062d7d6
 GIT binary patch
@@ -1898,7 +1780,7 @@ Ug1I1zZ~y=R07*qoM6N<$f{0Mm{{R30
 literal 0
 HcmV?d00001
 
-diff --git a/samples/FmRadioTransmitter/res/drawable/icon.png b/samples/FmRadioTransmitter/res/drawable/icon.png
+diff --git a/development/samples/FmRadioTransmitter/res/drawable/icon.png b/development/samples/FmRadioTransmitter/res/drawable/icon.png
 new file mode 100755
 index 0000000000000000000000000000000000000000..a07c69fa5a0f4da5d5efe96eea12a543154dbab6
 GIT binary patch
@@ -1957,7 +1839,7 @@ kfM{AOIT6Hei<0X907#l7&=u{JbN~PV07*qoM6N<$f*QKj`~Uy|
 literal 0
 HcmV?d00001
 
-diff --git a/samples/FmRadioTransmitter/res/drawable/rescan.png b/samples/FmRadioTransmitter/res/drawable/rescan.png
+diff --git a/development/samples/FmRadioTransmitter/res/drawable/rescan.png b/development/samples/FmRadioTransmitter/res/drawable/rescan.png
 new file mode 100755
 index 0000000000000000000000000000000000000000..2d2cc2aa182e05fb783a1fbd639f7a08426a9a5b
 GIT binary patch
@@ -2034,11 +1916,11 @@ k0Hu}`pcJ5mF8>o?0QlE~d;-n3IRF3v07*qoM6N<$f@vY02><{9
 literal 0
 HcmV?d00001
 
-diff --git a/samples/FmRadioTransmitter/res/drawable/rescanbutton.xml b/samples/FmRadioTransmitter/res/drawable/rescanbutton.xml
+diff --git a/development/samples/FmRadioTransmitter/res/drawable/rescanbutton.xml b/development/samples/FmRadioTransmitter/res/drawable/rescanbutton.xml
 new file mode 100755
 index 0000000..9585ff5
 --- /dev/null
-+++ b/samples/FmRadioTransmitter/res/drawable/rescanbutton.xml
++++ b/development/samples/FmRadioTransmitter/res/drawable/rescanbutton.xml
 @@ -0,0 +1,6 @@
 +<?xml version="1.0" encoding="utf-8"?>
 +<selector xmlns:android="http://schemas.android.com/apk/res/android">
@@ -2047,7 +1929,7 @@ index 0000000..9585ff5
 +	<item android:drawable="@drawable/rescan" />
 +</selector>
 \ No newline at end of file
-diff --git a/samples/FmRadioTransmitter/res/drawable/rescanpress.png b/samples/FmRadioTransmitter/res/drawable/rescanpress.png
+diff --git a/development/samples/FmRadioTransmitter/res/drawable/rescanpress.png b/development/samples/FmRadioTransmitter/res/drawable/rescanpress.png
 new file mode 100755
 index 0000000000000000000000000000000000000000..a03ce7aaf0b583b9b854a2420cd62c4109fe7ab0
 GIT binary patch
@@ -2132,7 +2014,7 @@ C9bt6<
 literal 0
 HcmV?d00001
 
-diff --git a/samples/FmRadioTransmitter/res/drawable/transmit1.png b/samples/FmRadioTransmitter/res/drawable/transmit1.png
+diff --git a/development/samples/FmRadioTransmitter/res/drawable/transmit1.png b/development/samples/FmRadioTransmitter/res/drawable/transmit1.png
 new file mode 100755
 index 0000000000000000000000000000000000000000..ecf4803adf5f8d857a93a8bc2961715e70964ef0
 GIT binary patch
@@ -2166,7 +2048,7 @@ Q@Har{bD@EC0nyq20oh>dUH||9
 literal 0
 HcmV?d00001
 
-diff --git a/samples/FmRadioTransmitter/res/drawable/transmit2.png b/samples/FmRadioTransmitter/res/drawable/transmit2.png
+diff --git a/development/samples/FmRadioTransmitter/res/drawable/transmit2.png b/development/samples/FmRadioTransmitter/res/drawable/transmit2.png
 new file mode 100755
 index 0000000000000000000000000000000000000000..19aaeda09d07c638fb17c753c8a59c72e9c80df3
 GIT binary patch
@@ -2224,7 +2106,7 @@ LtvS*3e*FIcP!Tsm
 literal 0
 HcmV?d00001
 
-diff --git a/samples/FmRadioTransmitter/res/drawable/transmit3.png b/samples/FmRadioTransmitter/res/drawable/transmit3.png
+diff --git a/development/samples/FmRadioTransmitter/res/drawable/transmit3.png b/development/samples/FmRadioTransmitter/res/drawable/transmit3.png
 new file mode 100755
 index 0000000000000000000000000000000000000000..5303824ad8d6ffa493e8ffe0d1aa732d43f6ef5b
 GIT binary patch
@@ -2317,7 +2199,7 @@ oP0hvF(|MQ6^8bbZHNx?AFmj`*r(!0U@H-07R)?uos31fC2aMC-`~Uy|
 literal 0
 HcmV?d00001
 
-diff --git a/samples/FmRadioTransmitter/res/drawable/transmit4.png b/samples/FmRadioTransmitter/res/drawable/transmit4.png
+diff --git a/development/samples/FmRadioTransmitter/res/drawable/transmit4.png b/development/samples/FmRadioTransmitter/res/drawable/transmit4.png
 new file mode 100755
 index 0000000000000000000000000000000000000000..39e41900db15e2dd3adb12a27d3d3e4fafc0d404
 GIT binary patch
@@ -2474,7 +2356,7 @@ X|1}D^;$Ao~5=WAgQj)9^H~#)VYftRE
 literal 0
 HcmV?d00001
 
-diff --git a/samples/FmRadioTransmitter/res/drawable/transmitgo.png b/samples/FmRadioTransmitter/res/drawable/transmitgo.png
+diff --git a/development/samples/FmRadioTransmitter/res/drawable/transmitgo.png b/development/samples/FmRadioTransmitter/res/drawable/transmitgo.png
 new file mode 100755
 index 0000000000000000000000000000000000000000..af8639cc7d79c084f66ef6c907e474d0f3cc9ce1
 GIT binary patch
@@ -2536,11 +2418,11 @@ s{0nqOZ8jdEpH=80djP2YKN{OAVH2{>2wLQA$>Rz*<$4zJ6pqRIH)T9X-~a#s
 literal 0
 HcmV?d00001
 
-diff --git a/samples/FmRadioTransmitter/res/drawable/transmitgobutton.xml b/samples/FmRadioTransmitter/res/drawable/transmitgobutton.xml
+diff --git a/development/samples/FmRadioTransmitter/res/drawable/transmitgobutton.xml b/development/samples/FmRadioTransmitter/res/drawable/transmitgobutton.xml
 new file mode 100755
 index 0000000..b486bbe
 --- /dev/null
-+++ b/samples/FmRadioTransmitter/res/drawable/transmitgobutton.xml
++++ b/development/samples/FmRadioTransmitter/res/drawable/transmitgobutton.xml
 @@ -0,0 +1,6 @@
 +<?xml version="1.0" encoding="utf-8"?>
 +<selector xmlns:android="http://schemas.android.com/apk/res/android">
@@ -2549,7 +2431,7 @@ index 0000000..b486bbe
 +	<item android:drawable="@drawable/transmitgo" />
 +</selector>
 \ No newline at end of file
-diff --git a/samples/FmRadioTransmitter/res/drawable/transmitgopress.png b/samples/FmRadioTransmitter/res/drawable/transmitgopress.png
+diff --git a/development/samples/FmRadioTransmitter/res/drawable/transmitgopress.png b/development/samples/FmRadioTransmitter/res/drawable/transmitgopress.png
 new file mode 100755
 index 0000000000000000000000000000000000000000..b9319c973e68cdf82bdaca0ea51780233c4cddf9
 GIT binary patch
@@ -2626,7 +2508,7 @@ uxDot*0_sF;C0M`WwGOuii~b+sNF?dbCbcbat@G@&1L*5K)GpPukN6)q;t%`)
 literal 0
 HcmV?d00001
 
-diff --git a/samples/FmRadioTransmitter/res/drawable/transmitstop.png b/samples/FmRadioTransmitter/res/drawable/transmitstop.png
+diff --git a/development/samples/FmRadioTransmitter/res/drawable/transmitstop.png b/development/samples/FmRadioTransmitter/res/drawable/transmitstop.png
 new file mode 100755
 index 0000000000000000000000000000000000000000..a1871ba651d7cfe2c33a1df256fb339903a72106
 GIT binary patch
@@ -2680,11 +2562,11 @@ uIq9oz-j@0H!N9W`St2jWWd8%$7fSeA&MXPNy?pTg0PNw;FsgM>`u_lOc!5j+
 literal 0
 HcmV?d00001
 
-diff --git a/samples/FmRadioTransmitter/res/drawable/transmitstopbutton.xml b/samples/FmRadioTransmitter/res/drawable/transmitstopbutton.xml
+diff --git a/development/samples/FmRadioTransmitter/res/drawable/transmitstopbutton.xml b/development/samples/FmRadioTransmitter/res/drawable/transmitstopbutton.xml
 new file mode 100755
 index 0000000..79c2db9
 --- /dev/null
-+++ b/samples/FmRadioTransmitter/res/drawable/transmitstopbutton.xml
++++ b/development/samples/FmRadioTransmitter/res/drawable/transmitstopbutton.xml
 @@ -0,0 +1,6 @@
 +<?xml version="1.0" encoding="utf-8"?>
 +<selector xmlns:android="http://schemas.android.com/apk/res/android">
@@ -2693,7 +2575,7 @@ index 0000000..79c2db9
 +	<item android:drawable="@drawable/transmitstop" />
 +</selector>
 \ No newline at end of file
-diff --git a/samples/FmRadioTransmitter/res/drawable/transmitstoppress.png b/samples/FmRadioTransmitter/res/drawable/transmitstoppress.png
+diff --git a/development/samples/FmRadioTransmitter/res/drawable/transmitstoppress.png b/development/samples/FmRadioTransmitter/res/drawable/transmitstoppress.png
 new file mode 100755
 index 0000000000000000000000000000000000000000..eee7306475a1e5103f68159484c3226500f13d9f
 GIT binary patch
@@ -2755,11 +2637,11 @@ yQ;nd=$en&JbONDmU)&;LIOG3JY5yg?UBm3SsfKhXX5&d<1<bEmqia#_@&5t_@GP4E
 literal 0
 HcmV?d00001
 
-diff --git a/samples/FmRadioTransmitter/res/layout/main.xml b/samples/FmRadioTransmitter/res/layout/main.xml
+diff --git a/development/samples/FmRadioTransmitter/res/layout/main.xml b/development/samples/FmRadioTransmitter/res/layout/main.xml
 new file mode 100755
 index 0000000..1669bb3
 --- /dev/null
-+++ b/samples/FmRadioTransmitter/res/layout/main.xml
++++ b/development/samples/FmRadioTransmitter/res/layout/main.xml
 @@ -0,0 +1,43 @@
 +<?xml version="1.0" encoding="utf-8"?>
 +<LinearLayout android:layout_width="fill_parent"
@@ -2805,11 +2687,11 @@ index 0000000..1669bb3
 +		android:layout_width="200px" android:background="@drawable/transmitgobutton" />
 +</LinearLayout>
 \ No newline at end of file
-diff --git a/samples/FmRadioTransmitter/res/values/strings.xml b/samples/FmRadioTransmitter/res/values/strings.xml
+diff --git a/development/samples/FmRadioTransmitter/res/values/strings.xml b/development/samples/FmRadioTransmitter/res/values/strings.xml
 new file mode 100755
 index 0000000..32d8048
 --- /dev/null
-+++ b/samples/FmRadioTransmitter/res/values/strings.xml
++++ b/development/samples/FmRadioTransmitter/res/values/strings.xml
 @@ -0,0 +1,10 @@
 +<?xml version="1.0" encoding="utf-8"?>
 +<resources>
@@ -2821,11 +2703,11 @@ index 0000000..32d8048
 +    <string name="band_ch">China</string>
 +    <string name="dashes">----</string>
 +</resources>
-diff --git a/samples/FmRadioTransmitter/src/com/example/android/fmradiotransmitter/FmRadioTransmitter.java b/samples/FmRadioTransmitter/src/com/example/android/fmradiotransmitter/FmRadioTransmitter.java
+diff --git a/development/samples/FmRadioTransmitter/src/com/example/android/fmradiotransmitter/FmRadioTransmitter.java b/development/samples/FmRadioTransmitter/src/com/example/android/fmradiotransmitter/FmRadioTransmitter.java
 new file mode 100755
 index 0000000..e06095e
 --- /dev/null
-+++ b/samples/FmRadioTransmitter/src/com/example/android/fmradiotransmitter/FmRadioTransmitter.java
++++ b/development/samples/FmRadioTransmitter/src/com/example/android/fmradiotransmitter/FmRadioTransmitter.java
 @@ -0,0 +1,384 @@
 +/*
 + * Copyright (C) 2011 The Android Open Source Project

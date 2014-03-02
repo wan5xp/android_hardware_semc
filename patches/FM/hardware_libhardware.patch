@@ -1,23 +1,8 @@
-From f67c5b45f973c6c0cffef32bf37035fbb80aacc3 Mon Sep 17 00:00:00 2001
-From: Johan Palmaeus <johan.xj.palmaeus@stericsson.com>
-Date: Wed, 12 Jan 2011 11:13:22 +0100
-Subject: [PATCH] FM Radio: Add support for FM Radio in Android
-
-Creating interface and framework for using FM Radio
-RX and TX from different vendors.
-
-Change-Id: I1a71aed01bfffdddfabf1cdfbfa3707cb1ed016b
-Signed-off-by: Benn Porscke <benn.porscke@stericsson.com>
----
- include/hardware/fmradio.h | 172 +++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 172 insertions(+)
- create mode 100644 include/hardware/fmradio.h
-
-diff --git a/include/hardware/fmradio.h b/include/hardware/fmradio.h
+diff --git a/hardware/libhardware/include/hardware/fmradio.h b/hardware/libhardware/include/hardware/fmradio.h
 new file mode 100644
 index 0000000..49b3ded
 --- /dev/null
-+++ b/include/hardware/fmradio.h
++++ b/hardware/libhardware/include/hardware/fmradio.h
 @@ -0,0 +1,172 @@
 +/*
 + * Copyright (C) ST-Ericsson SA 2010

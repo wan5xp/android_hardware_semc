@@ -1,17 +1,7 @@
-From 4ab7bb48a4a0d4cecd4e3f5de6d88075a7b20f48 Mon Sep 17 00:00:00 2001
-From: Alin Jerpelea <jerpelea@gmail.com>
-Date: Tue, 29 Jan 2013 21:47:07 +0200
-Subject: [PATCH] STE_FMRDIO:enable STE_FM radio
-
-Change-Id: I77ff268d37f0359c45600132281d5620c7c2d61d
----
- include/hardware_legacy/AudioSystemLegacy.h | 12 +++++++++++-
- 1 file changed, 11 insertions(+), 1 deletion(-)
-
-diff --git a/include/hardware_legacy/AudioSystemLegacy.h b/include/hardware_legacy/AudioSystemLegacy.h
+diff --git a/hardware/libhardware_legacy/include/hardware_legacy/AudioSystemLegacy.h b/hardware/libhardware_legacy/include/hardware_legacy/AudioSystemLegacy.h
 index a1e9c64..9832052 100644
---- a/include/hardware_legacy/AudioSystemLegacy.h
-+++ b/include/hardware_legacy/AudioSystemLegacy.h
+--- a/hardware/libhardware_legacy/include/hardware_legacy/AudioSystemLegacy.h
++++ b/hardware/libhardware_legacy/include/hardware_legacy/AudioSystemLegacy.h
 @@ -61,8 +61,12 @@ enum audio_source {
      AUDIO_SOURCE_CAMCORDER = 5,
      AUDIO_SOURCE_VOICE_RECOGNITION = 6,

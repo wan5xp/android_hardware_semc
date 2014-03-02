@@ -1,24 +1,7 @@
-From 36c0ce89112eb44a0e003f23daeb9bedbe402ad0 Mon Sep 17 00:00:00 2001
-From: Naveen Agarwal <naveen.agarwal@stericsson.com>
-Date: Fri, 6 Jul 2012 17:38:57 +0530
-Subject: [PATCH] FM Radio: Add support for FM Radio in Android
-
-Creating interface and framework for using FM Radio
-RX and TX from different vendors.
-
-Change-Id: I1a71aed01bfffdddfabf1cdfbfa3707cb1ed016b
-Signed-off-by: Benn Porscke <benn.porscke@stericsson.com>
-
-Conflicts:
-	include/system/audio.h
----
- include/system/audio.h | 13 +++++++++++++
- 1 file changed, 13 insertions(+)
-
-diff --git a/include/system/audio.h b/include/system/audio.h
+diff --git a/system/core/include/system/audio.h b/system/core/include/system/audio.h
 index 8ff0cc3..56fd0ba 100644
---- a/include/system/audio.h
-+++ b/include/system/audio.h
+--- a/system/core/include/system/audio.h
++++ b/system/core/include/system/audio.h
 @@ -68,6 +68,7 @@ typedef enum {
                                            /* An example of remote presentation is Wifi Display */
                                            /*  where a dongle attached to a TV can be used to   */

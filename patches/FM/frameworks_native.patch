@@ -1,23 +1,8 @@
-From 73f454cc0790e782ffdd361768482a2b38570084 Mon Sep 17 00:00:00 2001
-From: Alin Jerpelea <jerpelea@gmail.com>
-Date: Wed, 16 Jan 2013 08:00:53 +0200
-Subject: [PATCH] FM Radio: Add support for FM Radio in Android
-
-moved permissions to frameworks/native
-
-Change-Id: I27ded70f7bc116a1b1c9cff2383c4899afe746ec
----
- data/etc/com.stericsson.hardware.fm.receiver.xml    | 20 ++++++++++++++++++++
- data/etc/com.stericsson.hardware.fm.transmitter.xml | 20 ++++++++++++++++++++
- 2 files changed, 40 insertions(+)
- create mode 100644 data/etc/com.stericsson.hardware.fm.receiver.xml
- create mode 100644 data/etc/com.stericsson.hardware.fm.transmitter.xml
-
-diff --git a/data/etc/com.stericsson.hardware.fm.receiver.xml b/data/etc/com.stericsson.hardware.fm.receiver.xml
+diff --git a/frameworks/native/data/etc/com.stericsson.hardware.fm.receiver.xml b/frameworks/native/data/etc/com.stericsson.hardware.fm.receiver.xml
 new file mode 100644
 index 0000000..13092fa
 --- /dev/null
-+++ b/data/etc/com.stericsson.hardware.fm.receiver.xml
++++ b/frameworks/native/data/etc/com.stericsson.hardware.fm.receiver.xml
 @@ -0,0 +1,20 @@
 +<?xml version="1.0" encoding="utf-8"?>
 +<!-- Copyright (C) 2009 The Android Open Source Project
@@ -39,11 +24,11 @@ index 0000000..13092fa
 +<permissions>
 +    <feature name="com.stericsson.hardware.fm.receiver" />
 +</permissions>
-diff --git a/data/etc/com.stericsson.hardware.fm.transmitter.xml b/data/etc/com.stericsson.hardware.fm.transmitter.xml
+diff --git a/frameworks/native/data/etc/com.stericsson.hardware.fm.transmitter.xml b/frameworks/native/data/etc/com.stericsson.hardware.fm.transmitter.xml
 new file mode 100644
 index 0000000..9b51c03
 --- /dev/null
-+++ b/data/etc/com.stericsson.hardware.fm.transmitter.xml
++++ b/frameworks/native/data/etc/com.stericsson.hardware.fm.transmitter.xml
 @@ -0,0 +1,20 @@
 +<?xml version="1.0" encoding="utf-8"?>
 +<!-- Copyright (C) 2009 The Android Open Source Project

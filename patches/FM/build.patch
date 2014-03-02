@@ -1,23 +1,7 @@
-From ef83ac85d91285eeb7c567cd93a5c83d2fa7714d Mon Sep 17 00:00:00 2001
-From: Anurag Gupta <anurag.gupta@stericsson.com>
-Date: Wed, 18 Jul 2012 18:05:36 +0530
-Subject: [PATCH] FM Radio: Add support for FM Radio in Android
-
-Creating interface and framework for using FM Radio
-RX and TX from different vendors.
-
-Change-Id: I1a71aed01bfffdddfabf1cdfbfa3707cb1ed016b
-
-Signed-off-by: Benn Porscke <benn.porscke@stericsson.com>
----
- core/pathmap.mk        | 1 +
- target/product/core.mk | 1 +
- 2 files changed, 2 insertions(+)
-
-diff --git a/core/pathmap.mk b/core/pathmap.mk
+diff --git a/build/core/pathmap.mk b/build/core/pathmap.mk
 index 4aec521..3f38a6b 100644
---- a/core/pathmap.mk
-+++ b/core/pathmap.mk
+--- a/build/core/pathmap.mk
++++ b/build/core/pathmap.mk
 @@ -98,6 +98,7 @@ FRAMEWORKS_BASE_SUBDIRS := \
  	    keystore \
  	    icu4j \
@@ -26,10 +10,10 @@ index 4aec521..3f38a6b 100644
  	 )
  
  #
-diff --git a/target/product/core.mk b/target/product/core.mk
+diff --git a/build/target/product/core.mk b/build/target/product/core.mk
 index 8c72fb8..da1abae 100644
---- a/target/product/core.mk
-+++ b/target/product/core.mk
+--- a/build/target/product/core.mk
++++ b/build/target/product/core.mk
 @@ -84,6 +84,7 @@ PRODUCT_PACKAGES += \
      libfilterfw \
      libfilterpack_imageproc \

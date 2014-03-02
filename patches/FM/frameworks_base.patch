@@ -1,92 +1,9 @@
-From 44f2f8d10e87fd315abeb267a3159f2e00ce8e73 Mon Sep 17 00:00:00 2001
-From: Anurag Gupta <anurag.gupta@stericsson.com>
-Date: Wed, 18 Jul 2012 16:18:35 +0530
-Subject: [PATCH] FM Radio: Add support for FM Radio in Android
-
-Creating interface and framework for using FM Radio
-RX and TX from different vendors.
-
-Signed-off-by: Christian Bejram <christian.bejram@stericsson.com>
-Change-Id: I1a71aed01bfffdddfabf1cdfbfa3707cb1ed016b
-
-Conflicts:
-	core/java/android/app/ContextImpl.java
----
- Android.mk                                         |   21 +-
- core/java/android/app/ContextImpl.java             |   21 +
- core/java/android/content/pm/PackageManager.java   |   16 +
- core/res/AndroidManifest.xml                       |   16 +
- core/res/res/values/strings.xml                    |   12 +
- data/etc/com.stericsson.hardware.fm.receiver.xml   |   20 +
- .../etc/com.stericsson.hardware.fm.transmitter.xml |   20 +
- fmradio/include/android_fmradio.h                  |  203 +++
- .../java/com/stericsson/hardware/fm/FmBand.aidl    |   22 +
- .../java/com/stericsson/hardware/fm/FmBand.java    |  258 ++++
- .../com/stericsson/hardware/fm/FmReceiver.java     | 1327 +++++++++++++++++
- .../com/stericsson/hardware/fm/FmReceiverImpl.java | 1126 +++++++++++++++
- .../stericsson/hardware/fm/FmReceiverService.java  | 1347 ++++++++++++++++++
- .../com/stericsson/hardware/fm/FmTransmitter.java  |  807 +++++++++++
- .../stericsson/hardware/fm/FmTransmitterImpl.java  |  703 +++++++++
- .../hardware/fm/FmTransmitterService.java          |  846 +++++++++++
- .../com/stericsson/hardware/fm/IFmReceiver.aidl    |   84 ++
- .../com/stericsson/hardware/fm/IFmTransmitter.aidl |   64 +
- .../hardware/fm/IOnAutomaticSwitchListener.aidl    |   28 +
- .../hardware/fm/IOnBlockScanListener.aidl          |   28 +
- .../stericsson/hardware/fm/IOnErrorListener.aidl   |   28 +
- .../hardware/fm/IOnExtraCommandListener.aidl       |   30 +
- .../hardware/fm/IOnForcedPauseListener.aidl        |   28 +
- .../hardware/fm/IOnForcedResetListener.aidl        |   28 +
- .../hardware/fm/IOnRDSDataFoundListener.aidl       |   30 +
- .../stericsson/hardware/fm/IOnScanListener.aidl    |   29 +
- .../hardware/fm/IOnSignalStrengthListener.aidl     |   28 +
- .../stericsson/hardware/fm/IOnStartedListener.aidl |   28 +
- .../hardware/fm/IOnStateChangedListener.aidl       |   28 +
- .../stericsson/hardware/fm/IOnStereoListener.aidl  |   28 +
- .../java/com/stericsson/hardware/fm/package.html   |   13 +
- fmradio/jni/Android.mk                             |   41 +
- fmradio/jni/android_fmradio.cpp                    | 1188 ++++++++++++++++
- fmradio/jni/android_fmradio_Receiver.cpp           | 1494 ++++++++++++++++++++
- fmradio/jni/android_fmradio_Transmitter.cpp        | 1098 ++++++++++++++
- services/java/com/android/server/SystemServer.java |   17 +
- 36 files changed, 11100 insertions(+), 5 deletions(-)
- mode change 100644 => 100755 Android.mk
- create mode 100644 data/etc/com.stericsson.hardware.fm.receiver.xml
- create mode 100644 data/etc/com.stericsson.hardware.fm.transmitter.xml
- create mode 100644 fmradio/include/android_fmradio.h
- create mode 100644 fmradio/java/com/stericsson/hardware/fm/FmBand.aidl
- create mode 100644 fmradio/java/com/stericsson/hardware/fm/FmBand.java
- create mode 100644 fmradio/java/com/stericsson/hardware/fm/FmReceiver.java
- create mode 100644 fmradio/java/com/stericsson/hardware/fm/FmReceiverImpl.java
- create mode 100644 fmradio/java/com/stericsson/hardware/fm/FmReceiverService.java
- create mode 100644 fmradio/java/com/stericsson/hardware/fm/FmTransmitter.java
- create mode 100644 fmradio/java/com/stericsson/hardware/fm/FmTransmitterImpl.java
- create mode 100644 fmradio/java/com/stericsson/hardware/fm/FmTransmitterService.java
- create mode 100644 fmradio/java/com/stericsson/hardware/fm/IFmReceiver.aidl
- create mode 100644 fmradio/java/com/stericsson/hardware/fm/IFmTransmitter.aidl
- create mode 100644 fmradio/java/com/stericsson/hardware/fm/IOnAutomaticSwitchListener.aidl
- create mode 100644 fmradio/java/com/stericsson/hardware/fm/IOnBlockScanListener.aidl
- create mode 100644 fmradio/java/com/stericsson/hardware/fm/IOnErrorListener.aidl
- create mode 100644 fmradio/java/com/stericsson/hardware/fm/IOnExtraCommandListener.aidl
- create mode 100644 fmradio/java/com/stericsson/hardware/fm/IOnForcedPauseListener.aidl
- create mode 100644 fmradio/java/com/stericsson/hardware/fm/IOnForcedResetListener.aidl
- create mode 100644 fmradio/java/com/stericsson/hardware/fm/IOnRDSDataFoundListener.aidl
- create mode 100644 fmradio/java/com/stericsson/hardware/fm/IOnScanListener.aidl
- create mode 100644 fmradio/java/com/stericsson/hardware/fm/IOnSignalStrengthListener.aidl
- create mode 100644 fmradio/java/com/stericsson/hardware/fm/IOnStartedListener.aidl
- create mode 100644 fmradio/java/com/stericsson/hardware/fm/IOnStateChangedListener.aidl
- create mode 100644 fmradio/java/com/stericsson/hardware/fm/IOnStereoListener.aidl
- create mode 100644 fmradio/java/com/stericsson/hardware/fm/package.html
- create mode 100644 fmradio/jni/Android.mk
- create mode 100755 fmradio/jni/android_fmradio.cpp
- create mode 100755 fmradio/jni/android_fmradio_Receiver.cpp
- create mode 100755 fmradio/jni/android_fmradio_Transmitter.cpp
-
-diff --git a/Android.mk b/Android.mk
+diff --git a/frameworks/base/Android.mk b/frameworks/base/Android.mk
 old mode 100644
 new mode 100755
 index 61a17f1..6720ae9
---- a/Android.mk
-+++ b/Android.mk
+--- a/frameworks/base/Android.mk
++++ b/frameworks/base/Android.mk
 @@ -26,8 +26,6 @@ LOCAL_PATH := $(call my-dir)
  # TODO: find a more appropriate way to do this.
  framework_res_source_path := APPS/framework-res_intermediates/src
@@ -136,10 +53,10 @@ index 61a17f1..6720ae9
  # Include subdirectory makefiles
  # ============================================================
  
-diff --git a/core/java/android/app/ContextImpl.java b/core/java/android/app/ContextImpl.java
+diff --git a/frameworks/base/core/java/android/app/ContextImpl.java b/frameworks/base/core/java/android/app/ContextImpl.java
 index 7439426..e247939 100644
---- a/core/java/android/app/ContextImpl.java
-+++ b/core/java/android/app/ContextImpl.java
+--- a/frameworks/base/core/java/android/app/ContextImpl.java
++++ b/frameworks/base/core/java/android/app/ContextImpl.java
 @@ -126,6 +126,13 @@ import java.io.InputStream;
  import java.util.ArrayList;
  import java.util.HashMap;
@@ -175,10 +92,10 @@ index 7439426..e247939 100644
      }
  
      static ContextImpl getImpl(Context context) {
-diff --git a/core/java/android/content/pm/PackageManager.java b/core/java/android/content/pm/PackageManager.java
+diff --git a/frameworks/base/core/java/android/content/pm/PackageManager.java b/frameworks/base/core/java/android/content/pm/PackageManager.java
 index ba85efe..eb6e640 100644
---- a/core/java/android/content/pm/PackageManager.java
-+++ b/core/java/android/content/pm/PackageManager.java
+--- a/frameworks/base/core/java/android/content/pm/PackageManager.java
++++ b/frameworks/base/core/java/android/content/pm/PackageManager.java
 @@ -858,6 +858,22 @@ public abstract class PackageManager {
  
      /**
@@ -202,10 +119,10 @@ index ba85efe..eb6e640 100644
       * {@link #hasSystemFeature}: The device supports one or more methods of
       * reporting current location.
       */
-diff --git a/core/res/AndroidManifest.xml b/core/res/AndroidManifest.xml
+diff --git a/frameworks/base/core/res/AndroidManifest.xml b/frameworks/base/core/res/AndroidManifest.xml
 index 7b1543f..47a617c 100644
---- a/core/res/AndroidManifest.xml
-+++ b/core/res/AndroidManifest.xml
+--- a/frameworks/base/core/res/AndroidManifest.xml
++++ b/frameworks/base/core/res/AndroidManifest.xml
 @@ -755,6 +755,22 @@
          android:label="@string/permlab_vibrate"
          android:description="@string/permdesc_vibrate" />
@@ -229,10 +146,10 @@ index 7b1543f..47a617c 100644
      <!-- Allows access to the flashlight -->
      <permission android:name="android.permission.FLASHLIGHT"
          android:permissionGroup="android.permission-group.AFFECTS_BATTERY"
-diff --git a/core/res/res/values/strings.xml b/core/res/res/values/strings.xml
+diff --git a/frameworks/base/core/res/res/values/strings.xml b/frameworks/base/core/res/res/values/strings.xml
 index ec90b4a..9e58df6 100755
---- a/core/res/res/values/strings.xml
-+++ b/core/res/res/values/strings.xml
+--- a/frameworks/base/core/res/res/values/strings.xml
++++ b/frameworks/base/core/res/res/values/strings.xml
 @@ -1448,6 +1448,18 @@
      <string name="permdesc_vibrate">Allows the app to control the vibrator.</string>
  
@@ -252,11 +169,11 @@ index ec90b4a..9e58df6 100755
      <string name="permlab_flashlight">control flashlight</string>
      <!-- Description of an application permission, listed so the user can choose whether they want to allow the application to do this. -->
      <string name="permdesc_flashlight">Allows the app to control the flashlight.</string>
-diff --git a/data/etc/com.stericsson.hardware.fm.receiver.xml b/data/etc/com.stericsson.hardware.fm.receiver.xml
+diff --git a/frameworks/base/data/etc/com.stericsson.hardware.fm.receiver.xml b/frameworks/base/data/etc/com.stericsson.hardware.fm.receiver.xml
 new file mode 100644
 index 0000000..13092fa
 --- /dev/null
-+++ b/data/etc/com.stericsson.hardware.fm.receiver.xml
++++ b/frameworks/base/data/etc/com.stericsson.hardware.fm.receiver.xml
 @@ -0,0 +1,20 @@
 +<?xml version="1.0" encoding="utf-8"?>
 +<!-- Copyright (C) 2009 The Android Open Source Project
@@ -278,11 +195,11 @@ index 0000000..13092fa
 +<permissions>
 +    <feature name="com.stericsson.hardware.fm.receiver" />
 +</permissions>
-diff --git a/data/etc/com.stericsson.hardware.fm.transmitter.xml b/data/etc/com.stericsson.hardware.fm.transmitter.xml
+diff --git a/frameworks/base/data/etc/com.stericsson.hardware.fm.transmitter.xml b/frameworks/base/data/etc/com.stericsson.hardware.fm.transmitter.xml
 new file mode 100644
 index 0000000..9b51c03
 --- /dev/null
-+++ b/data/etc/com.stericsson.hardware.fm.transmitter.xml
++++ b/frameworks/base/data/etc/com.stericsson.hardware.fm.transmitter.xml
 @@ -0,0 +1,20 @@
 +<?xml version="1.0" encoding="utf-8"?>
 +<!-- Copyright (C) 2009 The Android Open Source Project
@@ -304,11 +221,11 @@ index 0000000..9b51c03
 +<permissions>
 +    <feature name="com.stericsson.hardware.fm.transmitter" />
 +</permissions>
-diff --git a/fmradio/include/android_fmradio.h b/fmradio/include/android_fmradio.h
+diff --git a/frameworks/base/fmradio/include/android_fmradio.h b/frameworks/base/fmradio/include/android_fmradio.h
 new file mode 100644
 index 0000000..18518b6
 --- /dev/null
-+++ b/fmradio/include/android_fmradio.h
++++ b/frameworks/base/fmradio/include/android_fmradio.h
 @@ -0,0 +1,203 @@
 +/*
 + * Copyright (C) ST-Ericsson SA 2010
@@ -513,11 +430,11 @@ index 0000000..18518b6
 +                               jstring command, jobjectArray parameter);
 +
 +#endif
-diff --git a/fmradio/java/com/stericsson/hardware/fm/FmBand.aidl b/fmradio/java/com/stericsson/hardware/fm/FmBand.aidl
+diff --git a/frameworks/base/fmradio/java/com/stericsson/hardware/fm/FmBand.aidl b/frameworks/base/fmradio/java/com/stericsson/hardware/fm/FmBand.aidl
 new file mode 100644
 index 0000000..76def36
 --- /dev/null
-+++ b/fmradio/java/com/stericsson/hardware/fm/FmBand.aidl
++++ b/frameworks/base/fmradio/java/com/stericsson/hardware/fm/FmBand.aidl
 @@ -0,0 +1,22 @@
 +/*
 + * Copyright (C) ST-Ericsson SA 2010
@@ -541,11 +458,11 @@ index 0000000..76def36
 +package com.stericsson.hardware.fm;
 +
 +parcelable FmBand;
-diff --git a/fmradio/java/com/stericsson/hardware/fm/FmBand.java b/fmradio/java/com/stericsson/hardware/fm/FmBand.java
+diff --git a/frameworks/base/fmradio/java/com/stericsson/hardware/fm/FmBand.java b/frameworks/base/fmradio/java/com/stericsson/hardware/fm/FmBand.java
 new file mode 100644
 index 0000000..f1002f3
 --- /dev/null
-+++ b/fmradio/java/com/stericsson/hardware/fm/FmBand.java
++++ b/frameworks/base/fmradio/java/com/stericsson/hardware/fm/FmBand.java
 @@ -0,0 +1,258 @@
 +/*
 + * Copyright (C) ST-Ericsson SA 2010
@@ -805,11 +722,11 @@ index 0000000..f1002f3
 +        }
 +    };
 +}
-diff --git a/fmradio/java/com/stericsson/hardware/fm/FmReceiver.java b/fmradio/java/com/stericsson/hardware/fm/FmReceiver.java
+diff --git a/frameworks/base/fmradio/java/com/stericsson/hardware/fm/FmReceiver.java b/frameworks/base/fmradio/java/com/stericsson/hardware/fm/FmReceiver.java
 new file mode 100644
 index 0000000..1055429
 --- /dev/null
-+++ b/fmradio/java/com/stericsson/hardware/fm/FmReceiver.java
++++ b/frameworks/base/fmradio/java/com/stericsson/hardware/fm/FmReceiver.java
 @@ -0,0 +1,1327 @@
 +/*
 + * Copyright (C) ST-Ericsson SA 2010
@@ -2138,11 +2055,11 @@ index 0000000..1055429
 +        void onAutomaticSwitch(int newFrequency, int reason);
 +    }
 +}
-diff --git a/fmradio/java/com/stericsson/hardware/fm/FmReceiverImpl.java b/fmradio/java/com/stericsson/hardware/fm/FmReceiverImpl.java
+diff --git a/frameworks/base/fmradio/java/com/stericsson/hardware/fm/FmReceiverImpl.java b/frameworks/base/fmradio/java/com/stericsson/hardware/fm/FmReceiverImpl.java
 new file mode 100644
 index 0000000..da57bc0
 --- /dev/null
-+++ b/fmradio/java/com/stericsson/hardware/fm/FmReceiverImpl.java
++++ b/frameworks/base/fmradio/java/com/stericsson/hardware/fm/FmReceiverImpl.java
 @@ -0,0 +1,1126 @@
 +/*
 + * Copyright (C) ST-Ericsson SA 2010
@@ -3270,11 +3187,11 @@ index 0000000..da57bc0
 +        }
 +    }
 +}
-diff --git a/fmradio/java/com/stericsson/hardware/fm/FmReceiverService.java b/fmradio/java/com/stericsson/hardware/fm/FmReceiverService.java
+diff --git a/frameworks/base/fmradio/java/com/stericsson/hardware/fm/FmReceiverService.java b/frameworks/base/fmradio/java/com/stericsson/hardware/fm/FmReceiverService.java
 new file mode 100644
 index 0000000..b002cb1
 --- /dev/null
-+++ b/fmradio/java/com/stericsson/hardware/fm/FmReceiverService.java
++++ b/frameworks/base/fmradio/java/com/stericsson/hardware/fm/FmReceiverService.java
 @@ -0,0 +1,1347 @@
 +/*
 + * Copyright (C) ST-Ericsson SA 2010
@@ -4623,11 +4540,11 @@ index 0000000..b002cb1
 +
 +    private native boolean _fm_receiver_sendExtraCommand(String command, String[] extras);
 +}
-diff --git a/fmradio/java/com/stericsson/hardware/fm/FmTransmitter.java b/fmradio/java/com/stericsson/hardware/fm/FmTransmitter.java
+diff --git a/frameworks/base/fmradio/java/com/stericsson/hardware/fm/FmTransmitter.java b/frameworks/base/fmradio/java/com/stericsson/hardware/fm/FmTransmitter.java
 new file mode 100644
 index 0000000..9581651
 --- /dev/null
-+++ b/fmradio/java/com/stericsson/hardware/fm/FmTransmitter.java
++++ b/frameworks/base/fmradio/java/com/stericsson/hardware/fm/FmTransmitter.java
 @@ -0,0 +1,807 @@
 +/*
 + * Copyright (C) ST-Ericsson SA 2010
@@ -5436,11 +5353,11 @@ index 0000000..9581651
 +        void onExtraCommand(String response, Bundle extras);
 +    }
 +}
-diff --git a/fmradio/java/com/stericsson/hardware/fm/FmTransmitterImpl.java b/fmradio/java/com/stericsson/hardware/fm/FmTransmitterImpl.java
+diff --git a/frameworks/base/fmradio/java/com/stericsson/hardware/fm/FmTransmitterImpl.java b/frameworks/base/fmradio/java/com/stericsson/hardware/fm/FmTransmitterImpl.java
 new file mode 100644
 index 0000000..0dbb005
 --- /dev/null
-+++ b/fmradio/java/com/stericsson/hardware/fm/FmTransmitterImpl.java
++++ b/frameworks/base/fmradio/java/com/stericsson/hardware/fm/FmTransmitterImpl.java
 @@ -0,0 +1,703 @@
 +/*
 + * Copyright (C) ST-Ericsson SA 2010
@@ -6145,11 +6062,11 @@ index 0000000..0dbb005
 +        }
 +    }
 +}
-diff --git a/fmradio/java/com/stericsson/hardware/fm/FmTransmitterService.java b/fmradio/java/com/stericsson/hardware/fm/FmTransmitterService.java
+diff --git a/frameworks/base/fmradio/java/com/stericsson/hardware/fm/FmTransmitterService.java b/frameworks/base/fmradio/java/com/stericsson/hardware/fm/FmTransmitterService.java
 new file mode 100644
 index 0000000..8434ebc
 --- /dev/null
-+++ b/fmradio/java/com/stericsson/hardware/fm/FmTransmitterService.java
++++ b/frameworks/base/fmradio/java/com/stericsson/hardware/fm/FmTransmitterService.java
 @@ -0,0 +1,846 @@
 +/*
 + * Copyright (C) ST-Ericsson SA 2010
@@ -6997,11 +6914,11 @@ index 0000000..8434ebc
 +
 +    private native boolean _fm_transmitter_sendExtraCommand(String command, String[] extras);
 +}
-diff --git a/fmradio/java/com/stericsson/hardware/fm/IFmReceiver.aidl b/fmradio/java/com/stericsson/hardware/fm/IFmReceiver.aidl
+diff --git a/frameworks/base/fmradio/java/com/stericsson/hardware/fm/IFmReceiver.aidl b/frameworks/base/fmradio/java/com/stericsson/hardware/fm/IFmReceiver.aidl
 new file mode 100644
 index 0000000..edf168e
 --- /dev/null
-+++ b/fmradio/java/com/stericsson/hardware/fm/IFmReceiver.aidl
++++ b/frameworks/base/fmradio/java/com/stericsson/hardware/fm/IFmReceiver.aidl
 @@ -0,0 +1,84 @@
 +/*
 + * Copyright (C) ST-Ericsson SA 2010
@@ -7087,11 +7004,11 @@ index 0000000..edf168e
 +    void addOnAutomaticSwitchListener(in IOnAutomaticSwitchListener listener);
 +    void removeOnAutomaticSwitchListener(in IOnAutomaticSwitchListener listener);
 +}
-diff --git a/fmradio/java/com/stericsson/hardware/fm/IFmTransmitter.aidl b/fmradio/java/com/stericsson/hardware/fm/IFmTransmitter.aidl
+diff --git a/frameworks/base/fmradio/java/com/stericsson/hardware/fm/IFmTransmitter.aidl b/frameworks/base/fmradio/java/com/stericsson/hardware/fm/IFmTransmitter.aidl
 new file mode 100644
 index 0000000..6ca0cee
 --- /dev/null
-+++ b/fmradio/java/com/stericsson/hardware/fm/IFmTransmitter.aidl
++++ b/frameworks/base/fmradio/java/com/stericsson/hardware/fm/IFmTransmitter.aidl
 @@ -0,0 +1,64 @@
 +/*
 + * Copyright (C) ST-Ericsson SA 2010
@@ -7157,11 +7074,11 @@ index 0000000..6ca0cee
 +    void addOnExtraCommandListener(in IOnExtraCommandListener listener);
 +    void removeOnExtraCommandListener(in IOnExtraCommandListener listener);
 +}
-diff --git a/fmradio/java/com/stericsson/hardware/fm/IOnAutomaticSwitchListener.aidl b/fmradio/java/com/stericsson/hardware/fm/IOnAutomaticSwitchListener.aidl
+diff --git a/frameworks/base/fmradio/java/com/stericsson/hardware/fm/IOnAutomaticSwitchListener.aidl b/frameworks/base/fmradio/java/com/stericsson/hardware/fm/IOnAutomaticSwitchListener.aidl
 new file mode 100644
 index 0000000..8bf88ad
 --- /dev/null
-+++ b/fmradio/java/com/stericsson/hardware/fm/IOnAutomaticSwitchListener.aidl
++++ b/frameworks/base/fmradio/java/com/stericsson/hardware/fm/IOnAutomaticSwitchListener.aidl
 @@ -0,0 +1,28 @@
 +/*
 + * Copyright (C) ST-Ericsson SA 2010
@@ -7191,11 +7108,11 @@ index 0000000..8bf88ad
 +{
 +    void onAutomaticSwitch(int newFrequency, int reason);
 +}
-diff --git a/fmradio/java/com/stericsson/hardware/fm/IOnBlockScanListener.aidl b/fmradio/java/com/stericsson/hardware/fm/IOnBlockScanListener.aidl
+diff --git a/frameworks/base/fmradio/java/com/stericsson/hardware/fm/IOnBlockScanListener.aidl b/frameworks/base/fmradio/java/com/stericsson/hardware/fm/IOnBlockScanListener.aidl
 new file mode 100644
 index 0000000..ec39dea
 --- /dev/null
-+++ b/fmradio/java/com/stericsson/hardware/fm/IOnBlockScanListener.aidl
++++ b/frameworks/base/fmradio/java/com/stericsson/hardware/fm/IOnBlockScanListener.aidl
 @@ -0,0 +1,28 @@
 +/*
 + * Copyright (C) ST-Ericsson SA 2010
@@ -7226,11 +7143,11 @@ index 0000000..ec39dea
 +    void onBlockScan(in int[] frequency, in int[] signalLevel, boolean aborted);
 +}
 \ No newline at end of file
-diff --git a/fmradio/java/com/stericsson/hardware/fm/IOnErrorListener.aidl b/fmradio/java/com/stericsson/hardware/fm/IOnErrorListener.aidl
+diff --git a/frameworks/base/fmradio/java/com/stericsson/hardware/fm/IOnErrorListener.aidl b/frameworks/base/fmradio/java/com/stericsson/hardware/fm/IOnErrorListener.aidl
 new file mode 100644
 index 0000000..558600b
 --- /dev/null
-+++ b/fmradio/java/com/stericsson/hardware/fm/IOnErrorListener.aidl
++++ b/frameworks/base/fmradio/java/com/stericsson/hardware/fm/IOnErrorListener.aidl
 @@ -0,0 +1,28 @@
 +/*
 + * Copyright (C) ST-Ericsson SA 2010
@@ -7260,11 +7177,11 @@ index 0000000..558600b
 +{
 +    void onError();
 +}
-diff --git a/fmradio/java/com/stericsson/hardware/fm/IOnExtraCommandListener.aidl b/fmradio/java/com/stericsson/hardware/fm/IOnExtraCommandListener.aidl
+diff --git a/frameworks/base/fmradio/java/com/stericsson/hardware/fm/IOnExtraCommandListener.aidl b/frameworks/base/fmradio/java/com/stericsson/hardware/fm/IOnExtraCommandListener.aidl
 new file mode 100644
 index 0000000..7647832
 --- /dev/null
-+++ b/fmradio/java/com/stericsson/hardware/fm/IOnExtraCommandListener.aidl
++++ b/frameworks/base/fmradio/java/com/stericsson/hardware/fm/IOnExtraCommandListener.aidl
 @@ -0,0 +1,30 @@
 +/*
 + * Copyright (C) ST-Ericsson SA 2010
@@ -7297,11 +7214,11 @@ index 0000000..7647832
 +    void onExtraCommand(String response, in Bundle extras);
 +}
 \ No newline at end of file
-diff --git a/fmradio/java/com/stericsson/hardware/fm/IOnForcedPauseListener.aidl b/fmradio/java/com/stericsson/hardware/fm/IOnForcedPauseListener.aidl
+diff --git a/frameworks/base/fmradio/java/com/stericsson/hardware/fm/IOnForcedPauseListener.aidl b/frameworks/base/fmradio/java/com/stericsson/hardware/fm/IOnForcedPauseListener.aidl
 new file mode 100644
 index 0000000..bb8d876
 --- /dev/null
-+++ b/fmradio/java/com/stericsson/hardware/fm/IOnForcedPauseListener.aidl
++++ b/frameworks/base/fmradio/java/com/stericsson/hardware/fm/IOnForcedPauseListener.aidl
 @@ -0,0 +1,28 @@
 +/*
 + * Copyright (C) ST-Ericsson SA 2010
@@ -7331,11 +7248,11 @@ index 0000000..bb8d876
 +{
 +    void onForcedPause();
 +}
-diff --git a/fmradio/java/com/stericsson/hardware/fm/IOnForcedResetListener.aidl b/fmradio/java/com/stericsson/hardware/fm/IOnForcedResetListener.aidl
+diff --git a/frameworks/base/fmradio/java/com/stericsson/hardware/fm/IOnForcedResetListener.aidl b/frameworks/base/fmradio/java/com/stericsson/hardware/fm/IOnForcedResetListener.aidl
 new file mode 100644
 index 0000000..4514501
 --- /dev/null
-+++ b/fmradio/java/com/stericsson/hardware/fm/IOnForcedResetListener.aidl
++++ b/frameworks/base/fmradio/java/com/stericsson/hardware/fm/IOnForcedResetListener.aidl
 @@ -0,0 +1,28 @@
 +/*
 + * Copyright (C) ST-Ericsson SA 2010
@@ -7365,11 +7282,11 @@ index 0000000..4514501
 +{
 +    void onForcedReset(int reason);
 +}
-diff --git a/fmradio/java/com/stericsson/hardware/fm/IOnRDSDataFoundListener.aidl b/fmradio/java/com/stericsson/hardware/fm/IOnRDSDataFoundListener.aidl
+diff --git a/frameworks/base/fmradio/java/com/stericsson/hardware/fm/IOnRDSDataFoundListener.aidl b/frameworks/base/fmradio/java/com/stericsson/hardware/fm/IOnRDSDataFoundListener.aidl
 new file mode 100644
 index 0000000..31b4801
 --- /dev/null
-+++ b/fmradio/java/com/stericsson/hardware/fm/IOnRDSDataFoundListener.aidl
++++ b/frameworks/base/fmradio/java/com/stericsson/hardware/fm/IOnRDSDataFoundListener.aidl
 @@ -0,0 +1,30 @@
 +/*
 + * Copyright (C) ST-Ericsson SA 2010
@@ -7401,11 +7318,11 @@ index 0000000..31b4801
 +{
 +    void onRDSDataFound(in Bundle options, int frequency);
 +}
-diff --git a/fmradio/java/com/stericsson/hardware/fm/IOnScanListener.aidl b/fmradio/java/com/stericsson/hardware/fm/IOnScanListener.aidl
+diff --git a/frameworks/base/fmradio/java/com/stericsson/hardware/fm/IOnScanListener.aidl b/frameworks/base/fmradio/java/com/stericsson/hardware/fm/IOnScanListener.aidl
 new file mode 100644
 index 0000000..9996c1a
 --- /dev/null
-+++ b/fmradio/java/com/stericsson/hardware/fm/IOnScanListener.aidl
++++ b/frameworks/base/fmradio/java/com/stericsson/hardware/fm/IOnScanListener.aidl
 @@ -0,0 +1,29 @@
 +/*
 + * Copyright (C) ST-Ericsson SA 2010
@@ -7436,11 +7353,11 @@ index 0000000..9996c1a
 +    void onScan(int tunedFrequency, int signalLevel, int scanDirection, boolean aborted);
 +    void onFullScan(in int[] frequency, in int[] signalLevel, boolean aborted);
 +}
-diff --git a/fmradio/java/com/stericsson/hardware/fm/IOnSignalStrengthListener.aidl b/fmradio/java/com/stericsson/hardware/fm/IOnSignalStrengthListener.aidl
+diff --git a/frameworks/base/fmradio/java/com/stericsson/hardware/fm/IOnSignalStrengthListener.aidl b/frameworks/base/fmradio/java/com/stericsson/hardware/fm/IOnSignalStrengthListener.aidl
 new file mode 100644
 index 0000000..431952b
 --- /dev/null
-+++ b/fmradio/java/com/stericsson/hardware/fm/IOnSignalStrengthListener.aidl
++++ b/frameworks/base/fmradio/java/com/stericsson/hardware/fm/IOnSignalStrengthListener.aidl
 @@ -0,0 +1,28 @@
 +/*
 + * Copyright (C) ST-Ericsson SA 2010
@@ -7471,11 +7388,11 @@ index 0000000..431952b
 +    void onSignalStrengthChanged(int signalStrength);
 +}
 \ No newline at end of file
-diff --git a/fmradio/java/com/stericsson/hardware/fm/IOnStartedListener.aidl b/fmradio/java/com/stericsson/hardware/fm/IOnStartedListener.aidl
+diff --git a/frameworks/base/fmradio/java/com/stericsson/hardware/fm/IOnStartedListener.aidl b/frameworks/base/fmradio/java/com/stericsson/hardware/fm/IOnStartedListener.aidl
 new file mode 100644
 index 0000000..b15ef09
 --- /dev/null
-+++ b/fmradio/java/com/stericsson/hardware/fm/IOnStartedListener.aidl
++++ b/frameworks/base/fmradio/java/com/stericsson/hardware/fm/IOnStartedListener.aidl
 @@ -0,0 +1,28 @@
 +/*
 + * Copyright (C) ST-Ericsson SA 2010
@@ -7505,11 +7422,11 @@ index 0000000..b15ef09
 +{
 +    void onStarted();
 +}
-diff --git a/fmradio/java/com/stericsson/hardware/fm/IOnStateChangedListener.aidl b/fmradio/java/com/stericsson/hardware/fm/IOnStateChangedListener.aidl
+diff --git a/frameworks/base/fmradio/java/com/stericsson/hardware/fm/IOnStateChangedListener.aidl b/frameworks/base/fmradio/java/com/stericsson/hardware/fm/IOnStateChangedListener.aidl
 new file mode 100644
 index 0000000..3a63564
 --- /dev/null
-+++ b/fmradio/java/com/stericsson/hardware/fm/IOnStateChangedListener.aidl
++++ b/frameworks/base/fmradio/java/com/stericsson/hardware/fm/IOnStateChangedListener.aidl
 @@ -0,0 +1,28 @@
 +/*
 + * Copyright (C) ST-Ericsson SA 2010
@@ -7539,11 +7456,11 @@ index 0000000..3a63564
 +{
 +    void onStateChanged(int oldState, int newState);
 +}
-diff --git a/fmradio/java/com/stericsson/hardware/fm/IOnStereoListener.aidl b/fmradio/java/com/stericsson/hardware/fm/IOnStereoListener.aidl
+diff --git a/frameworks/base/fmradio/java/com/stericsson/hardware/fm/IOnStereoListener.aidl b/frameworks/base/fmradio/java/com/stericsson/hardware/fm/IOnStereoListener.aidl
 new file mode 100644
 index 0000000..ff2c977
 --- /dev/null
-+++ b/fmradio/java/com/stericsson/hardware/fm/IOnStereoListener.aidl
++++ b/frameworks/base/fmradio/java/com/stericsson/hardware/fm/IOnStereoListener.aidl
 @@ -0,0 +1,28 @@
 +/*
 + * Copyright (C) ST-Ericsson SA 2010
@@ -7574,11 +7491,11 @@ index 0000000..ff2c977
 +    void onPlayingInStereo(boolean inStereo);
 +}
 \ No newline at end of file
-diff --git a/fmradio/java/com/stericsson/hardware/fm/package.html b/fmradio/java/com/stericsson/hardware/fm/package.html
+diff --git a/frameworks/base/fmradio/java/com/stericsson/hardware/fm/package.html b/frameworks/base/fmradio/java/com/stericsson/hardware/fm/package.html
 new file mode 100644
 index 0000000..13c4a07
 --- /dev/null
-+++ b/fmradio/java/com/stericsson/hardware/fm/package.html
++++ b/frameworks/base/fmradio/java/com/stericsson/hardware/fm/package.html
 @@ -0,0 +1,13 @@
 +<HTML>
 +<BODY>
@@ -7593,11 +7510,11 @@ index 0000000..13c4a07
 +</p>
 +</BODY>
 +</HTML>
-diff --git a/fmradio/jni/Android.mk b/fmradio/jni/Android.mk
+diff --git a/frameworks/base/fmradio/jni/Android.mk b/frameworks/base/fmradio/jni/Android.mk
 new file mode 100644
 index 0000000..1b2643d
 --- /dev/null
-+++ b/fmradio/jni/Android.mk
++++ b/frameworks/base/fmradio/jni/Android.mk
 @@ -0,0 +1,41 @@
 +LOCAL_PATH:= $(call my-dir)
 +include $(CLEAR_VARS)
@@ -7640,11 +7557,11 @@ index 0000000..1b2643d
 +
 +include $(BUILD_SHARED_LIBRARY)
 +
-diff --git a/fmradio/jni/android_fmradio.cpp b/fmradio/jni/android_fmradio.cpp
+diff --git a/frameworks/base/fmradio/jni/android_fmradio.cpp b/frameworks/base/fmradio/jni/android_fmradio.cpp
 new file mode 100755
 index 0000000..5dd9f72
 --- /dev/null
-+++ b/fmradio/jni/android_fmradio.cpp
++++ b/frameworks/base/fmradio/jni/android_fmradio.cpp
 @@ -0,0 +1,1188 @@
 +/*
 + * Copyright (C) ST-Ericsson SA 2010
@@ -8834,11 +8751,11 @@ index 0000000..5dd9f72
 +
 +    return JNI_VERSION_1_4;
 +}
-diff --git a/fmradio/jni/android_fmradio_Receiver.cpp b/fmradio/jni/android_fmradio_Receiver.cpp
+diff --git a/frameworks/base/fmradio/jni/android_fmradio_Receiver.cpp b/frameworks/base/fmradio/jni/android_fmradio_Receiver.cpp
 new file mode 100755
 index 0000000..78e3e16
 --- /dev/null
-+++ b/fmradio/jni/android_fmradio_Receiver.cpp
++++ b/frameworks/base/fmradio/jni/android_fmradio_Receiver.cpp
 @@ -0,0 +1,1494 @@
 +/*
 + * Copyright (C) ST-Ericsson SA 2010
@@ -10334,11 +10251,11 @@ index 0000000..78e3e16
 +
 +/* *INDENT-OFF* */
 +};                              // namespace android
-diff --git a/fmradio/jni/android_fmradio_Transmitter.cpp b/fmradio/jni/android_fmradio_Transmitter.cpp
+diff --git a/frameworks/base/fmradio/jni/android_fmradio_Transmitter.cpp b/frameworks/base/fmradio/jni/android_fmradio_Transmitter.cpp
 new file mode 100755
 index 0000000..b8a7e48
 --- /dev/null
-+++ b/fmradio/jni/android_fmradio_Transmitter.cpp
++++ b/frameworks/base/fmradio/jni/android_fmradio_Transmitter.cpp
 @@ -0,0 +1,1098 @@
 +/*
 + * Copyright (C) ST-Ericsson SA 2010
@@ -11438,10 +11355,10 @@ index 0000000..b8a7e48
 +
 +/* *INDENT-OFF* */
 +};                              // namespace android
-diff --git a/services/java/com/android/server/SystemServer.java b/services/java/com/android/server/SystemServer.java
+diff --git a/frameworks/base/services/java/com/android/server/SystemServer.java b/frameworks/base/services/java/com/android/server/SystemServer.java
 index fe04911..e35446e89 100644
---- a/services/java/com/android/server/SystemServer.java
-+++ b/services/java/com/android/server/SystemServer.java
+--- a/frameworks/base/services/java/com/android/server/SystemServer.java
++++ b/frameworks/base/services/java/com/android/server/SystemServer.java
 @@ -76,6 +76,8 @@ import dalvik.system.Zygote;
  import java.io.File;
  import java.util.Timer;

@@ -1,32 +1,8 @@
-From 69d8d46c5985ed76947f875ee3b7d32febfcf201 Mon Sep 17 00:00:00 2001
-From: Stefan Ekenberg <stefan.ekenberg@stericsson.com>
-Date: Mon, 20 Aug 2012 12:00:26 +0200
-Subject: [PATCH] FM Radio: Add support for FM Radio in Android
-
-Creating interface and framework for using FM Radio
-RX and TX from different vendors.
-
-Change-Id: I1a71aed01bfffdddfabf1cdfbfa3707cb1ed016b
-Signed-off-by: Benn Porscke <benn.porscke@stericsson.com>
----
- include/media/stagefright/FMRadioSource.h   |  64 ++++++
- media/libstagefright/Android.mk             |   6 +
- media/libstagefright/AwesomePlayer.cpp      |  10 +
- media/libstagefright/FMRadioSource.cpp      | 201 ++++++++++++++++++
- media/libstagefright/MediaExtractor.cpp     |   5 +
- media/libstagefright/PCMExtractor.cpp       | 302 ++++++++++++++++++++++++++++
- media/libstagefright/include/PCMExtractor.h |  61 ++++++
- 7 files changed, 649 insertions(+)
- create mode 100644 include/media/stagefright/FMRadioSource.h
- create mode 100644 media/libstagefright/FMRadioSource.cpp
- create mode 100644 media/libstagefright/PCMExtractor.cpp
- create mode 100644 media/libstagefright/include/PCMExtractor.h
-
-diff --git a/include/media/stagefright/FMRadioSource.h b/include/media/stagefright/FMRadioSource.h
+diff --git a/frameworks/av/include/media/stagefright/FMRadioSource.h b/frameworks/av/include/media/stagefright/FMRadioSource.h
 new file mode 100644
 index 0000000..32db156
 --- /dev/null
-+++ b/include/media/stagefright/FMRadioSource.h
++++ b/frameworks/av/include/media/stagefright/FMRadioSource.h
 @@ -0,0 +1,64 @@
 +/*
 + * Copyright (C) ST-Ericsson SA 2012
@@ -92,10 +68,10 @@ index 0000000..32db156
 +}  // namespace android
 +
 +#endif  // FMRADIO_SOURCE_H_
-diff --git a/media/libstagefright/Android.mk b/media/libstagefright/Android.mk
+diff --git a/frameworks/av/media/libstagefright/Android.mk b/frameworks/av/media/libstagefright/Android.mk
 index 7939be4..eb89cfe 100755
---- a/media/libstagefright/Android.mk
-+++ b/media/libstagefright/Android.mk
+--- a/frameworks/av/media/libstagefright/Android.mk
++++ b/frameworks/av/media/libstagefright/Android.mk
 @@ -77,6 +77,12 @@ else
  LOCAL_C_INCLUDES += $(TOP)/frameworks/native/include/media/openmax
  endif
@@ -109,10 +85,10 @@ index 7939be4..eb89cfe 100755
  ifeq ($(BOARD_USES_QCOM_HARDWARE),true)
  LOCAL_SRC_FILES += \
          ExtendedWriter.cpp                \
-diff --git a/media/libstagefright/AwesomePlayer.cpp b/media/libstagefright/AwesomePlayer.cpp
+diff --git a/frameworks/av/media/libstagefright/AwesomePlayer.cpp b/frameworks/av/media/libstagefright/AwesomePlayer.cpp
 index 83c480d..97ee08a 100644
---- a/media/libstagefright/AwesomePlayer.cpp
-+++ b/media/libstagefright/AwesomePlayer.cpp
+--- a/frameworks/av/media/libstagefright/AwesomePlayer.cpp
++++ b/frameworks/av/media/libstagefright/AwesomePlayer.cpp
 @@ -50,6 +50,7 @@
  #endif
  #include <media/stagefright/DataSource.h>
@@ -137,11 +113,11 @@ index 83c480d..97ee08a 100644
      } else {
          dataSource = DataSource::CreateFromURI(mUri.string(), &mUriHeaders);
      }
-diff --git a/media/libstagefright/FMRadioSource.cpp b/media/libstagefright/FMRadioSource.cpp
+diff --git a/frameworks/av/media/libstagefright/FMRadioSource.cpp b/frameworks/av/media/libstagefright/FMRadioSource.cpp
 new file mode 100644
 index 0000000..4229f23
 --- /dev/null
-+++ b/media/libstagefright/FMRadioSource.cpp
++++ b/frameworks/av/media/libstagefright/FMRadioSource.cpp
 @@ -0,0 +1,201 @@
 +/*
 + * Copyright (C) ST-Ericsson SA 2012
@@ -344,10 +320,10 @@ index 0000000..4229f23
 +}
 +
 +}  // namespace android
-diff --git a/media/libstagefright/MediaExtractor.cpp b/media/libstagefright/MediaExtractor.cpp
+diff --git a/frameworks/av/media/libstagefright/MediaExtractor.cpp b/frameworks/av/media/libstagefright/MediaExtractor.cpp
 index 833084a..218448b 100644
---- a/media/libstagefright/MediaExtractor.cpp
-+++ b/media/libstagefright/MediaExtractor.cpp
+--- a/frameworks/av/media/libstagefright/MediaExtractor.cpp
++++ b/frameworks/av/media/libstagefright/MediaExtractor.cpp
 @@ -25,6 +25,7 @@
  #include "include/FragmentedMP4Extractor.h"
  #include "include/WAVExtractor.h"
@@ -367,11 +343,11 @@ index 833084a..218448b 100644
      }
  
      if (ret != NULL) {
-diff --git a/media/libstagefright/PCMExtractor.cpp b/media/libstagefright/PCMExtractor.cpp
+diff --git a/frameworks/av/media/libstagefright/PCMExtractor.cpp b/frameworks/av/media/libstagefright/PCMExtractor.cpp
 new file mode 100644
 index 0000000..bb26bcd
 --- /dev/null
-+++ b/media/libstagefright/PCMExtractor.cpp
++++ b/frameworks/av/media/libstagefright/PCMExtractor.cpp
 @@ -0,0 +1,302 @@
 +/*
 + * Copyright (C) ST-Ericsson SA 2010
@@ -675,11 +651,11 @@ index 0000000..bb26bcd
 +}
 +
 +}  // namespace android
-diff --git a/media/libstagefright/include/PCMExtractor.h b/media/libstagefright/include/PCMExtractor.h
+diff --git a/frameworks/av/media/libstagefright/include/PCMExtractor.h b/frameworks/av/media/libstagefright/include/PCMExtractor.h
 new file mode 100644
 index 0000000..4717d10
 --- /dev/null
-+++ b/media/libstagefright/include/PCMExtractor.h
++++ b/frameworks/av/media/libstagefright/include/PCMExtractor.h
 @@ -0,0 +1,61 @@
 +/*
 + * Copyright (C) ST-Ericsson SA 2010

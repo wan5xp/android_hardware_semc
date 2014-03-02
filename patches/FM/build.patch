@@ -3,25 +3,25 @@ index 4aec521..3f38a6b 100644
 --- a/build/core/pathmap.mk
 +++ b/build/core/pathmap.mk
 @@ -98,6 +98,7 @@ FRAMEWORKS_BASE_SUBDIRS := \
- 	    keystore \
- 	    icu4j \
- 	    voip \
+	    telephony \
+	    wifi \
+	    keystore \
 +	    fmradio \
  	 )
  
  #
-diff --git a/build/target/product/core.mk b/build/target/product/core.mk
+diff --git a/build/target/product/core_base.mk b/build/target/product/core_base.mk
 index 8c72fb8..da1abae 100644
 --- a/build/target/product/core.mk
 +++ b/build/target/product/core.mk
-@@ -84,6 +84,7 @@ PRODUCT_PACKAGES += \
-     libfilterfw \
-     libfilterpack_imageproc \
-     libgabi++ \
+@@ -34,6 +34,7 @@ PRODUCT_PACKAGES += \
+    libbcc \
+    libfilterpack_imageproc \
+    libgabi++ \
 +    libanalogradiobroadcasting \
-     libicui18n \
-     libicuuc \
-     libjavacore \
--- 
-1.8.5.3
+    libkeystore \
+    libmdnssd \
+    libnfc_ndef \
+
+
 

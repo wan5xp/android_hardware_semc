@@ -73,18 +73,19 @@ index 7939be4..eb89cfe 100755
 --- a/frameworks/av/media/libstagefright/Android.mk
 +++ b/frameworks/av/media/libstagefright/Android.mk
 @@ -77,6 +77,12 @@ else
- LOCAL_C_INCLUDES += $(TOP)/frameworks/native/include/media/openmax
- endif
+@@ -59,6 +59,12 @@ LOCAL_SRC_FILES:=                         \
+         mp4/FragmentedMP4Parser.cpp       \
+         mp4/TrackFragment.cpp             \
  
 +ifeq ($(BOARD_USES_STE_FMRADIO),true)
 +LOCAL_SRC_FILES += \
 +        FMRadioSource.cpp                 \
-+        PCMExtractor.cpp
++        PCMExtractor.cpp                  \
 +endif
 +
- ifeq ($(BOARD_USES_QCOM_HARDWARE),true)
- LOCAL_SRC_FILES += \
-         ExtendedWriter.cpp                \
+ LOCAL_C_INCLUDES:= \
+         $(TOP)/frameworks/av/include/media/stagefright/timedtext \
+         $(TOP)/frameworks/native/include/media/hardware \
 diff --git a/frameworks/av/media/libstagefright/AwesomePlayer.cpp b/frameworks/av/media/libstagefright/AwesomePlayer.cpp
 index 83c480d..97ee08a 100644
 --- a/frameworks/av/media/libstagefright/AwesomePlayer.cpp

@@ -11368,28 +11368,31 @@ index fe04911..e35446e89 100644
  
  class ServerThread {
      private static final String TAG = "SystemServer";
-@@ -550,6 +552,21 @@ class ServerThread extends Thread {
-             }
- 
-             try {
-+                Slog.i(TAG, "FM receiver Service");
-+                ServiceManager.addService("fm_receiver",
+@@ -594,7 +594,23 @@ class ServerThread {
+                 } catch (Throwable e) {
+                     reportWtf("starting Service Discovery Service", e);
+                 }
+-            }
++                
++                try {
++                   Slog.i(TAG, "FM receiver Service");
++                    ServiceManager.addService("fm_receiver",
 +                        new FmReceiverService(context));
-+            } catch (Throwable e) {
-+                Slog.e(TAG, "Failure starting FM receiver Service", e);
-+            }
++               } catch (Throwable e) {
++                   Slog.e(TAG, "Failure starting FM receiver Service", e);
++               }
 +
-+            try {
-+                Slog.i(TAG, "FM transmitter Service");
-+                ServiceManager.addService("fm_transmitter",
++               try {
++                   Slog.i(TAG, "FM transmitter Service");
++                   ServiceManager.addService("fm_transmitter",
 +                        new FmTransmitterService(context));
-+            } catch (Throwable e) {
-+                Slog.e(TAG, "Failure starting FM transmitter Service", e);
-+            }
-+            try {
-                 Slog.i(TAG, "UpdateLock Service");
-                 ServiceManager.addService(Context.UPDATE_LOCK_SERVICE,
-                         new UpdateLockService(context));
++               } catch (Throwable e) {
++                   Slog.e(TAG, "Failure starting FM transmitter Service", e);
++               }
++           }
+ 
+             if (!disableNonCoreServices) {
+                 try {
 -- 
 1.8.5.3
 

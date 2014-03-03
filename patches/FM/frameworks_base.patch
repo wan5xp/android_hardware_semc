@@ -4,15 +4,6 @@ new mode 100755
 index 61a17f1..6720ae9
 --- a/frameworks/base/Android.mk
 +++ b/frameworks/base/Android.mk
-@@ -26,8 +26,6 @@ LOCAL_PATH := $(call my-dir)
- # TODO: find a more appropriate way to do this.
- framework_res_source_path := APPS/framework-res_intermediates/src
- 
--# the library
--# ============================================================
- include $(CLEAR_VARS)
- 
- # FRAMEWORKS_BASE_SUBDIRS comes from build/core/pathmap.mk
 @@ -225,7 +223,21 @@ LOCAL_SRC_FILES += \
  	wifi/java/android/net/wifi/p2p/IWifiP2pManager.aidl \
  	voip/java/android/net/sip/ISipSession.aidl \
@@ -71,9 +62,9 @@ index 7439426..e247939 100644
  class ReceiverRestrictedContext extends ContextWrapper {
      ReceiverRestrictedContext(Context base) {
          super(base);
-@@ -552,6 +559,20 @@ class ContextImpl extends Context {
-                 public Object createService(ContextImpl ctx) {
-                     return WimaxHelper.createWimaxService(ctx, ctx.mMainThread.getHandler());
+@@ -620,6 +620,20 @@ class ContextImpl extends Context {
+                     IBatteryService service = IBatteryService.Stub.asInterface(b);
+                     return new BatteryManager(service, ctx);
                  }});
 +
 +        registerService("fm_receiver", new ServiceFetcher() {

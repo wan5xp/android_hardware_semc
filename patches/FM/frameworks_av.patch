@@ -72,7 +72,6 @@ diff --git a/frameworks/av/media/libstagefright/Android.mk b/frameworks/av/media
 index 7939be4..eb89cfe 100755
 --- a/frameworks/av/media/libstagefright/Android.mk
 +++ b/frameworks/av/media/libstagefright/Android.mk
-@@ -77,6 +77,12 @@ else
 @@ -59,6 +59,12 @@ LOCAL_SRC_FILES:=                         \
          mp4/FragmentedMP4Parser.cpp       \
          mp4/TrackFragment.cpp             \

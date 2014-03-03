@@ -4,29 +4,27 @@ new mode 100755
 index 61a17f1..6720ae9
 --- a/frameworks/base/Android.mk
 +++ b/frameworks/base/Android.mk
-@@ -225,7 +223,21 @@ LOCAL_SRC_FILES += \
- 	wifi/java/android/net/wifi/p2p/IWifiP2pManager.aidl \
- 	voip/java/android/net/sip/ISipSession.aidl \
- 	voip/java/android/net/sip/ISipSessionListener.aidl \
--	voip/java/android/net/sip/ISipService.aidl
-+	voip/java/android/net/sip/ISipService.aidl \
-+	fmradio/java/com/stericsson/hardware/fm/IFmReceiver.aidl \
-+	fmradio/java/com/stericsson/hardware/fm/IFmTransmitter.aidl \
-+	fmradio/java/com/stericsson/hardware/fm/IOnStateChangedListener.aidl \
-+	fmradio/java/com/stericsson/hardware/fm/IOnStartedListener.aidl \
-+	fmradio/java/com/stericsson/hardware/fm/IOnErrorListener.aidl \
-+	fmradio/java/com/stericsson/hardware/fm/IOnScanListener.aidl \
-+	fmradio/java/com/stericsson/hardware/fm/IOnForcedPauseListener.aidl \
-+	fmradio/java/com/stericsson/hardware/fm/IOnForcedResetListener.aidl \
-+	fmradio/java/com/stericsson/hardware/fm/IOnBlockScanListener.aidl \
-+	fmradio/java/com/stericsson/hardware/fm/IOnRDSDataFoundListener.aidl \
-+	fmradio/java/com/stericsson/hardware/fm/IOnSignalStrengthListener.aidl \
-+	fmradio/java/com/stericsson/hardware/fm/IOnStereoListener.aidl \
-+	fmradio/java/com/stericsson/hardware/fm/IOnExtraCommandListener.aidl \
-+	fmradio/java/com/stericsson/hardware/fm/IOnAutomaticSwitchListener.aidl
- #
+@@ -294,6 +286,21 @@ LOCAL_SRC_FILES += \
+        packages/services/PacProcessor/com/android/net/IProxyService.aidl \
+        packages/services/Proxy/com/android/net/IProxyCallback.aidl \
+        packages/services/Proxy/com/android/net/IProxyPortListener.aidl \
++       fmradio/java/com/stericsson/hardware/fm/IFmReceiver.aidl \
++       fmradio/java/com/stericsson/hardware/fm/IFmTransmitter.aidl \
++       fmradio/java/com/stericsson/hardware/fm/IOnStateChangedListener.aidl \
++       fmradio/java/com/stericsson/hardware/fm/IOnStartedListener.aidl \
++       fmradio/java/com/stericsson/hardware/fm/IOnErrorListener.aidl \
++       fmradio/java/com/stericsson/hardware/fm/IOnScanListener.aidl \
++       fmradio/java/com/stericsson/hardware/fm/IOnForcedPauseListener.aidl \
++       fmradio/java/com/stericsson/hardware/fm/IOnForcedResetListener.aidl \
++       fmradio/java/com/stericsson/hardware/fm/IOnBlockScanListener.aidl \
++       fmradio/java/com/stericsson/hardware/fm/IOnRDSDataFoundListener.aidl \
++       fmradio/java/com/stericsson/hardware/fm/IOnSignalStrengthListener.aidl \
++       fmradio/java/com/stericsson/hardware/fm/IOnStereoListener.aidl \
++       fmradio/java/com/stericsson/hardware/fm/IOnExtraCommandListener.aidl \
++       fmradio/java/com/stericsson/hardware/fm/IOnAutomaticSwitchListener.aidl \
  
- 
+ # FRAMEWORKS_BASE_JAVA_SRC_DIRS comes from build/core/pathmap.mk
+ LOCAL_AIDL_INCLUDES += $(FRAMEWORKS_BASE_JAVA_SRC_DIRS)
 @@ -558,7 +570,7 @@ include $(CLEAR_VARS)
  
  LOCAL_SRC_FILES:=$(framework_docs_LOCAL_API_CHECK_SRC_FILES)

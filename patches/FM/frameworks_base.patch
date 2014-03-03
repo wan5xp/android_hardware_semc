@@ -4,7 +4,7 @@ new mode 100755
 index 61a17f1..6720ae9
 --- a/frameworks/base/Android.mk
 +++ b/frameworks/base/Android.mk
-@@ -294,6 +286,20 @@ LOCAL_SRC_FILES += \
+@@ -294,6 +294,20 @@ LOCAL_SRC_FILES += \
         packages/services/PacProcessor/com/android/net/IProxyService.aidl \
         packages/services/Proxy/com/android/net/IProxyCallback.aidl \
         packages/services/Proxy/com/android/net/IProxyPortListener.aidl \

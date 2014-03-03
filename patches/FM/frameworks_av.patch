@@ -324,8 +324,8 @@ diff --git a/frameworks/av/media/libstagefright/MediaExtractor.cpp b/frameworks/
 index 833084a..218448b 100644
 --- a/frameworks/av/media/libstagefright/MediaExtractor.cpp
 +++ b/frameworks/av/media/libstagefright/MediaExtractor.cpp
-@@ -25,6 +25,7 @@
- #include "include/FragmentedMP4Extractor.h"
+@@ -23,6 +23,7 @@
+ #include "include/MPEG4Extractor.h"
  #include "include/WAVExtractor.h"
  #include "include/OggExtractor.h"
 +#include "include/PCMExtractor.h"

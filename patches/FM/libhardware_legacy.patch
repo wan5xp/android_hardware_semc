@@ -2,17 +2,17 @@ diff --git a/hardware/libhardware_legacy/include/hardware_legacy/AudioSystemLega
 index a1e9c64..9832052 100644
 --- a/hardware/libhardware_legacy/include/hardware_legacy/AudioSystemLegacy.h
 +++ b/hardware/libhardware_legacy/include/hardware_legacy/AudioSystemLegacy.h
-@@ -61,8 +61,12 @@ enum audio_source {
-     AUDIO_SOURCE_CAMCORDER = 5,
-     AUDIO_SOURCE_VOICE_RECOGNITION = 6,
-     AUDIO_SOURCE_VOICE_COMMUNICATION = 7,
+@@ -74,6 +74,13 @@ enum audio_source {
+     AUDIO_SOURCE_MAX = AUDIO_SOURCE_VOICE_COMMUNICATION,
+ #endif
+ 
 +#if defined (STE_FM)
 +    AUDIO_SOURCE_FM_RX = 8,
 +    AUDIO_SOURCE_MAX = AUDIO_SOURCE_FM_RX,
 +#else
-     AUDIO_SOURCE_MAX = AUDIO_SOURCE_VOICE_COMMUNICATION,
--
++     AUDIO_SOURCE_MAX = AUDIO_SOURCE_VOICE_COMMUNICATION,
 +#endif
++
      AUDIO_SOURCE_LIST_END  // must be last - used to validate audio source type
  };
  

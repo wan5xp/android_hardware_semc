@@ -157,3 +157,5 @@ index 061c21d..ca975c5 100644
  } hwc_composer_device_1_t;
  
  /** convenience API for opening and closing a device */
+-- 
+1.8.5.3

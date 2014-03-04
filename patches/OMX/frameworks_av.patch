@@ -348,8 +348,8 @@ index eb18470..41e51f2 100644
      enum Quirks {
          kNeedsFlushBeforeDisable              = 1,
          kWantsNALFragments                    = 2,
-@@ -107,6 +111,9 @@ struct OMXCodec : public MediaSource,
-         kRequiresGlobalFlush                  = 0x20000000, // 2^29
+@@ -107,6 +107,9 @@ struct OMXCodec : public MediaSource,
+ #ifdef QCOM_HARDWARE
          kRequiresWMAProComponent              = 0x40000000, //2^30
  #endif
 +#ifdef STE_HARDWARE

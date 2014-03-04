@@ -2,54 +2,42 @@ diff --git a/system/core/include/system/audio.h b/system/core/include/system/aud
 index 8ff0cc3..56fd0ba 100644
 --- a/system/core/include/system/audio.h
 +++ b/system/core/include/system/audio.h
-@@ -68,6 +68,7 @@ typedef enum {
-                                           /* An example of remote presentation is Wifi Display */
-                                           /*  where a dongle attached to a TV can be used to   */
-                                           /*  play the mix captured by this audio source.      */
-+    AUDIO_SOURCE_FM_RADIO_RX         = 9,
-     AUDIO_SOURCE_CNT,
-     AUDIO_SOURCE_MAX                 = AUDIO_SOURCE_CNT - 1,
- } audio_source_t;
-@@ -368,6 +369,9 @@ enum {
+@@ -395,7 +395,7 @@ enum {
+     AUDIO_DEVICE_OUT_ANC_HEADSET               = 0x10000,
+     AUDIO_DEVICE_OUT_ANC_HEADPHONE             = 0x20000,
+     AUDIO_DEVICE_OUT_PROXY                     = 0x40000,
+-#ifdef QCOM_HARDWARE
++#if defined(QCOM_HARDWARE) || defined(STE_FM)
      AUDIO_DEVICE_OUT_FM                        = 0x80000,
      AUDIO_DEVICE_OUT_FM_TX                     = 0x100000,
  #endif
-+#ifdef STE_FM
-+    AUDIO_DEVICE_OUT_FM_TX                     = 0x10000,
-+#endif
-     AUDIO_DEVICE_OUT_DEFAULT                   = AUDIO_DEVICE_BIT_DEFAULT,
-     AUDIO_DEVICE_OUT_ALL      = (AUDIO_DEVICE_OUT_EARPIECE |
-                                  AUDIO_DEVICE_OUT_SPEAKER |
-@@ -392,6 +396,9 @@ enum {
+@@ -419,7 +419,7 @@ enum {
+                                  AUDIO_DEVICE_OUT_ANC_HEADSET |
+                                  AUDIO_DEVICE_OUT_ANC_HEADPHONE |
+                                  AUDIO_DEVICE_OUT_PROXY |
+-#ifdef QCOM_HARDWARE
++#if defined(QCOM_HARDWARE) || defined(STE_FM)
                                   AUDIO_DEVICE_OUT_FM |
                                   AUDIO_DEVICE_OUT_FM_TX |
  #endif
-+#ifdef STE_FM
-+                                 AUDIO_DEVICE_OUT_FM_TX |
-+#endif
-                                  AUDIO_DEVICE_OUT_DEFAULT),
-     AUDIO_DEVICE_OUT_ALL_A2DP = (AUDIO_DEVICE_OUT_BLUETOOTH_A2DP |
-                                  AUDIO_DEVICE_OUT_BLUETOOTH_A2DP_HEADPHONES |
-@@ -438,6 +445,9 @@ enum {
+@@ -467,7 +467,7 @@ enum {
+     AUDIO_DEVICE_IN_USB_DEVICE            = AUDIO_DEVICE_BIT_IN | 0x1000,
+     AUDIO_DEVICE_IN_ANC_HEADSET           = AUDIO_DEVICE_BIT_IN | 0x2000,
+     AUDIO_DEVICE_IN_PROXY                 = AUDIO_DEVICE_BIT_IN | 0x4000,
+-#ifdef QCOM_HARDWARE
++#if defined(QCOM_HARDWARE) || defined(STE_FM)
      AUDIO_DEVICE_IN_FM_RX                 = AUDIO_DEVICE_BIT_IN | 0x8000,
      AUDIO_DEVICE_IN_FM_RX_A2DP            = AUDIO_DEVICE_BIT_IN | 0x10000,
  #endif
-+#ifdef STE_FM
-+    AUDIO_DEVICE_IN_FM_RX                 = AUDIO_DEVICE_BIT_IN | 0x2000,
-+#endif
-     AUDIO_DEVICE_IN_DEFAULT               = AUDIO_DEVICE_BIT_IN | AUDIO_DEVICE_BIT_DEFAULT,
- #endif
- 
-@@ -460,6 +470,9 @@ enum {
-                                AUDIO_DEVICE_IN_FM_RX_A2DP |
+@@ -489,7 +489,7 @@ enum {
+                                AUDIO_DEVICE_IN_USB_DEVICE |
                                 AUDIO_DEVICE_IN_PROXY |
+                                AUDIO_DEVICE_IN_ANC_HEADSET |
+-#ifdef QCOM_HARDWARE
++#if defined(QCOM_HARDWARE) || defined(STE_FM)
+                                AUDIO_DEVICE_IN_FM_RX |
+                                AUDIO_DEVICE_IN_FM_RX_A2DP |
  #endif
-+#ifdef STE_FM
-+                               AUDIO_DEVICE_IN_FM_RX |
-+#endif
-                                AUDIO_DEVICE_IN_DEFAULT),
-     AUDIO_DEVICE_IN_ALL_SCO = AUDIO_DEVICE_IN_BLUETOOTH_SCO_HEADSET,
- };
 -- 
 1.8.5.3
 

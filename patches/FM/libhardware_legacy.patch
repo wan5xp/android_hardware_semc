@@ -1,7 +1,7 @@
 diff --git a/hardware/libhardware_legacyaudio/AudioPolicyManagerBase.cpp b/hardware/libhardware_legacyaudio/AudioPolicyManagerBase.cpp
 index 722bbd3..4ea127e 100644 (file)
---- a/hardware/libhardware_legacyaudio/AudioPolicyManagerBase.cpp
-+++ b/hardware/libhardware_legacyaudio/AudioPolicyManagerBase.cpp
+--- a/hardware/libhardware_legacy/audio/AudioPolicyManagerBase.cpp
++++ b/hardware/libhardware_legacy/audio/AudioPolicyManagerBase.cpp
 @@ -2563,6 +2563,9 @@ AudioPolicyManagerBase::device_category AudioPolicyManagerBase::getDeviceCategor
          case AUDIO_DEVICE_OUT_BLUETOOTH_SCO_HEADSET:
          case AUDIO_DEVICE_OUT_BLUETOOTH_A2DP:
@@ -32,8 +32,8 @@ index 722bbd3..4ea127e 100644 (file)
  #endif
 diff --git a/hardware/libhardware_legacyinclude/hardware_legacy/AudioSystemLegacy.h b/hardware/libhardware_legacyinclude/hardware_legacy/AudioSystemLegacy.h
 index 9832052..971a633 100644 (file)
---- a/hardware/libhardware_legacyinclude/hardware_legacy/AudioSystemLegacy.h
-+++ b/hardware/libhardware_legacyinclude/hardware_legacy/AudioSystemLegacy.h
+--- a/hardware/libhardware_legacy/include/hardware_legacy/AudioSystemLegacy.h
++++ b/hardware/libhardware_legacy/include/hardware_legacy/AudioSystemLegacy.h
 @@ -61,11 +61,13 @@ enum audio_source {
      AUDIO_SOURCE_CAMCORDER = 5,
      AUDIO_SOURCE_VOICE_RECOGNITION = 6,

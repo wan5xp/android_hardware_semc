@@ -158,3 +158,5 @@ index 5ba09f1..d94e000 100644
  
          // indicates to the audio policy manager that the input starts being used.
          virtual status_t startInput(audio_io_handle_t input);
+-- 
+1.8.5.3

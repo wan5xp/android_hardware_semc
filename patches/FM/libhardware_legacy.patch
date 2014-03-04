@@ -16,26 +16,27 @@ index a1e9c64..9832052 100644
      AUDIO_SOURCE_LIST_END  // must be last - used to validate audio source type
  };
  
-@@ -280,6 +284,9 @@ public:
-         DEVICE_IN_PROXY = 0x20000000,
-         DEVICE_IN_ANLG_DOCK_HEADSET = 0x40000000,
+@@ -316,6 +316,10 @@ public:
+         DEVICE_IN_DEFAULT = 0x80000000,
  #endif
+ 
 +#if defined (STE_FM)
 +        DEVICE_IN_FM_RX = 0x1000000,
 +#endif
-         DEVICE_IN_DEFAULT = 0x80000000,
- 
++
          DEVICE_IN_ALL = (DEVICE_IN_COMMUNICATION | DEVICE_IN_AMBIENT | DEVICE_IN_BUILTIN_MIC |
-@@ -288,6 +295,9 @@ public:
+                 DEVICE_IN_BLUETOOTH_SCO_HEADSET | DEVICE_IN_WIRED_HEADSET | DEVICE_IN_AUX_DIGITAL |
  #ifdef QCOM_HARDWARE
-                 DEVICE_IN_ANC_HEADSET | DEVICE_IN_PROXY | DEVICE_IN_ANLG_DOCK_HEADSET |
- #endif
+@@ -323,6 +327,9 @@ public:
+                 DEVICE_IN_FM_RX | DEVICE_IN_FM_RX_A2DP | DEVICE_IN_DEFAULT |
+                 DEVICE_IN_ANLG_DOCK_HEADSET | DEVICE_IN_PROXY)
+ #else
 +#if defined (STE_FM)
 +                DEVICE_IN_FM_RX |
 +#endif
-                 DEVICE_IN_DEFAULT)
+                 DEVICE_IN_VOICE_CALL | DEVICE_IN_BACK_MIC | DEVICE_IN_DEFAULT)
+ #endif
      };
- 
 -- 
 1.8.5.3
 

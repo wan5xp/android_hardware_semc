@@ -77,9 +77,9 @@ index 7939be4..eb89cfe 100755
          mp4/TrackFragment.cpp             \
  
 +ifeq ($(BOARD_USES_STE_FMRADIO),true)
-+LOCAL_SRC_FILES += \
++LOCAL_SRC_FILES +=                        \
 +        FMRadioSource.cpp                 \
-+        PCMExtractor.cpp                  \
++        PCMExtractor.cpp                  
 +endif
 +
  LOCAL_C_INCLUDES:= \

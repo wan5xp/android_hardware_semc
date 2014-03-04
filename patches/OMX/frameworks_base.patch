@@ -119,14 +119,14 @@ index 1733b65..1868469 100644
  static inline void swapCanvasPtr(JNIEnv* env, jobject canvasObj, SkCanvas* newCanvas) {
    jobject canvasFinalizerObj = env->GetObjectField(canvasObj, gCanvasClassInfo.mFinalizer);
    SkCanvas* previousCanvas = reinterpret_cast<SkCanvas*>(
-@@ -398,8 +369,6 @@ static JNINativeMethod gSurfaceMethods[] = {
+@@ -398,8 +398,6 @@ static JNINativeMethod gSurfaceMethods[] = {
              (void*)nativeReadFromParcel },
      {"nativeWriteToParcel", "(ILandroid/os/Parcel;)V",
              (void*)nativeWriteToParcel },
 -    {"nativeSetDirtyRegion", "(ILandroid/graphics/Rect;)V",
 -           (void*)nativeSetDirtyRegion },
- };#       modified:   core/jni/android_view_HardwareRenderer.cpp
-
+ };
+ 
  int register_android_view_Surface(JNIEnv* env)
 -- 
 1.8.5.3

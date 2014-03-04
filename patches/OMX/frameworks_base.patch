@@ -128,3 +128,5 @@ index 1733b65..1868469 100644
  };#       modified:   core/jni/android_view_HardwareRenderer.cpp
 
  int register_android_view_Surface(JNIEnv* env)
+-- 
+1.8.5.3

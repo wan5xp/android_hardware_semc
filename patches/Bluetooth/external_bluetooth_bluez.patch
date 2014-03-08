@@ -87,3 +87,43 @@ index 1b23ad7..026885e 100644
  
  #define HCI_UART_RAW_DEVICE	0
  #define HCI_UART_RESET_ON_INIT	1
+diff --git a/external/bluetooth/bluez/android/Android.mk b/external/bluetooth/bluez/android/Android.mk
+index 082161c..76b5abb 100644
+--- a/external/bluetooth/bluez/android/Android.mk
++++ b/external/bluetooth/bluez/android/Android.mk
+@@ -461,3 +461,35 @@ LOCAL_REQUIRED_MODULES := \
+ include $(BUILD_EXECUTABLE)
+ 
+ endif
++
++#
++# hciattach
++#
++
++include $(CLEAR_VARS)
++
++LOCAL_SRC_FILES:= \
++       bluez/tools/hciattach.c \
++        bluez/tools/hciattach_st.c \
++        bluez/tools/hciattach_ti.c \
++        bluez/tools/hciattach_tialt.c \
++        bluez/tools/hciattach_ath3k.c \
++        bluez/tools/hciattach_qualcomm.c \
++        bluez/tools/hciattach_intel.c
++
++LOCAL_CFLAGS:= \
++       -Wno-missing-field-initializers \
++       -Wno-pointer-arith
++
++LOCAL_C_INCLUDES:= \
++       $(LOCAL_PATH)/bluez/lib \
++       $(LOCAL_PATH)/bluez/tools
++
++LOCAL_SHARED_LIBRARIES := \
++       libbluetooth
++
++LOCAL_MODULE_PATH := $(TARGET_OUT_EXECUTABLES)
++LOCAL_MODULE_TAGS := optional
++LOCAL_MODULE := hciattach
++
++include $(BUILD_EXECUTABLE)

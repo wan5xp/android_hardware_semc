@@ -105,33 +105,33 @@ index 082161c..76b5abb 100644
  
  endif
 
-#
-# hciattach
-#
-
-include $(CLEAR_VARS)
-
-LOCAL_SRC_FILES:= \
-	bluez/tools/hciattach.c \
-	bluez/tools/hciattach_st.c \
-	bluez/tools/hciattach_ti.c \
-	bluez/tools/hciattach_tialt.c \
-	bluez/tools/hciattach_ath3k.c \
-	bluez/tools/hciattach_qualcomm.c \
-	bluez/tools/hciattach_intel.c
-
-LOCAL_CFLAGS := $(BLUEZ_COMMON_CFLAGS)
-
-LOCAL_C_INCLUDES:= \
-	$(LOCAL_PATH)/bluez/lib \
-	$(LOCAL_PATH)/bluez/android \
-	$(LOCAL_PATH)/bluez/tools
-
-LOCAL_MODULE_PATH := $(TARGET_OUT_EXECUTABLES)
-LOCAL_MODULE_TAGS := optional
-LOCAL_MODULE := hciattach
-
-include $(BUILD_EXECUTABLE)
++#
++# hciattach
++#
++
++include $(CLEAR_VARS)
++
++LOCAL_SRC_FILES:= \
++	bluez/tools/hciattach.c \
++	bluez/tools/hciattach_st.c \
++	bluez/tools/hciattach_ti.c \
++	bluez/tools/hciattach_tialt.c \
++	bluez/tools/hciattach_ath3k.c \
++	bluez/tools/hciattach_qualcomm.c \
++	bluez/tools/hciattach_intel.c
++
++LOCAL_CFLAGS := $(BLUEZ_COMMON_CFLAGS)
++
++LOCAL_C_INCLUDES:= \
++	$(LOCAL_PATH)/bluez/lib \
++	$(LOCAL_PATH)/bluez/android \
++	$(LOCAL_PATH)/bluez/tools
++
++LOCAL_MODULE_PATH := $(TARGET_OUT_EXECUTABLES)
++LOCAL_MODULE_TAGS := optional
++LOCAL_MODULE := hciattach
++
++include $(BUILD_EXECUTABLE)
 diff --git a/external/bluetooth/bluez/android/ppoll.h b/external/bluetooth/bluez/android/ppoll.h
 new file mode 100644
 index 0000000..0b758bd

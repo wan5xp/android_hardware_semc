@@ -1,7 +1,7 @@
-diff --git a/android/Android.mk b/android/Android.mk
+diff --git a/external/bluetooth/bluez/android/Android.mk b/external/bluetooth/bluez/android/Android.mk
 index 082161c..af31384 100644
---- a/android/Android.mk
-+++ b/android/Android.mk
+--- a/external/bluetooth/bluez/android/Android.mk
++++ b/external/bluetooth/bluez/android/Android.mk
 @@ -461,3 +461,25 @@ LOCAL_REQUIRED_MODULES := \
  include $(BUILD_EXECUTABLE)
  
@@ -28,10 +28,10 @@ index 082161c..af31384 100644
 +LOCAL_MODULE := hciattach
 +
 +include $(BUILD_EXECUTABLE)
-diff --git a/tools/hciattach.c b/tools/hciattach.c
+diff --git a/external/bluetooth/bluez/tools/hciattach.c b/external/bluetooth/bluez/tools/hciattach.c
 index db01b85..ffb13f5 100644
---- a/tools/hciattach.c
-+++ b/tools/hciattach.c
+--- a/external/bluetooth/bluez/tools/hciattach.c
++++ b/external/bluetooth/bluez/tools/hciattach.c
 @@ -42,12 +42,14 @@
  #include <sys/param.h>
  #include <sys/ioctl.h>
@@ -511,10 +511,10 @@ index db01b85..ffb13f5 100644
  	if (n < 0) {
  		perror("Can't initialize device");
  		exit(1);
-diff --git a/tools/hciattach.h b/tools/hciattach.h
+diff --git a/external/bluetooth/bluez/tools/hciattach.h b/external/bluetooth/bluez/tools/hciattach.h
 index 1b23ad7..026885e 100644
---- a/tools/hciattach.h
-+++ b/tools/hciattach.h
+--- a/external/bluetooth/bluez/tools/hciattach.h
++++ b/external/bluetooth/bluez/tools/hciattach.h
 @@ -39,6 +39,7 @@
  #define HCI_UART_H4DS	3
  #define HCI_UART_LL	4

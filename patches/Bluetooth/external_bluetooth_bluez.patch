@@ -2,20 +2,11 @@ diff --git a/external/bluetooth/bluez/tools/hciattach.c b/external/bluetooth/blu
 index 62fbaff..e6c2e5f 100644
 --- a/external/bluetooth/bluez/tools/hciattach.c
 +++ b/external/bluetooth/bluez/tools/hciattach.c
-@@ -42,12 +42,14 @@
- #include <sys/param.h>
- #include <sys/ioctl.h>
- 
--#include <bluetooth/bluetooth.h>
--#include <bluetooth/hci.h>
--#include <bluetooth/hci_lib.h>
-+#include <lib/bluetooth.h>
-+#include <lib/hci.h>
-+#include <lib/hci_lib.h>
+@@ -48,6 +48,8 @@
  
  #include "hciattach.h"
  
-+#include <android/ppoll.h>
++#include "ppoll.h"
 +
  struct uart_t {
  	char *type;
@@ -109,7 +100,7 @@ diff --git a/external/bluetooth/bluez/android/Android.mk b/external/bluetooth/bl
 index 082161c..76b5abb 100644
 --- a/external/bluetooth/bluez/android/Android.mk
 +++ b/external/bluetooth/bluez/android/Android.mk
-@@ -461,3 +461,25 @@ LOCAL_REQUIRED_MODULES := \
+@@ -461,3 +461,31 @@ LOCAL_REQUIRED_MODULES := \
  include $(BUILD_EXECUTABLE)
  
  endif
@@ -121,7 +112,13 @@ index 082161c..76b5abb 100644
 +include $(CLEAR_VARS)
 +
 +LOCAL_SRC_FILES:= \
-+	bluez/tools/hciattach.c
++	bluez/tools/hciattach.c \
++	bluez/tools/hciattach_st.c \
++	bluez/tools/hciattach_ti.c \
++	bluez/tools/hciattach_tialt.c \
++	bluez/tools/hciattach_ath3k.c \
++	bluez/tools/hciattach_qualcomm.c \
++	bluez/tools/hciattach_intel.c
 +
 +LOCAL_CFLAGS := $(BLUEZ_COMMON_CFLAGS)
 +

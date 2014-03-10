@@ -1,7 +1,7 @@
-diff --git a/external/bluetooth/bluez/android/Android.mk b/external/bluetooth/bluez/android/Android.mk
-index 082161c..8fd5df8 100644
---- a/external/bluetooth/bluez/android/Android.mk
-+++ b/external/bluetooth/bluez/android/Android.mk
+diff --git a/android/Android.mk b/android/Android.mk
+index 082161c..af31384 100644
+--- a/android/Android.mk
++++ b/android/Android.mk
 @@ -461,3 +461,25 @@ LOCAL_REQUIRED_MODULES := \
  include $(BUILD_EXECUTABLE)
  
@@ -15,12 +15,12 @@ index 082161c..8fd5df8 100644
 +
 +LOCAL_SRC_FILES:= \
 +	bluez/tools/hciattach.c \
++	bluez/tools/hciattach_st.c \
 +
 +LOCAL_CFLAGS := $(BLUEZ_COMMON_CFLAGS)
 +
 +LOCAL_C_INCLUDES:= \
 +	$(LOCAL_PATH)/bluez/lib \
-+	$(LOCAL_PATH)/bluez/android \
 +	$(LOCAL_PATH)/bluez/tools
 +
 +LOCAL_MODULE_PATH := $(TARGET_OUT_EXECUTABLES)
@@ -28,10 +28,10 @@ index 082161c..8fd5df8 100644
 +LOCAL_MODULE := hciattach
 +
 +include $(BUILD_EXECUTABLE)
-diff --git a/external/bluetooth/bluez/tools/hciattach.c b/external/bluetooth/bluez/tools/hciattach.c
-index db01b85..db08a98 100644
---- a/external/bluetooth/bluez/tools/hciattach.c
-+++ b/external/bluetooth/bluez/tools/hciattach.c
+diff --git a/tools/hciattach.c b/tools/hciattach.c
+index db01b85..ffb13f5 100644
+--- a/tools/hciattach.c
++++ b/tools/hciattach.c
 @@ -42,12 +42,14 @@
  #include <sys/param.h>
  #include <sys/ioctl.h>
@@ -50,74 +50,395 @@ index db01b85..db08a98 100644
  struct uart_t {
  	char *type;
  	int  m_id;
-@@ -255,9 +257,11 @@ static int ericsson(int fd, struct uart_t *u, struct termios *ti)
+@@ -255,78 +257,6 @@ static int ericsson(int fd, struct uart_t *u, struct termios *ti)
  	return 0;
  }
  
-+
- /*
-  * Digianswer specific initialization
-  */
-+/*
- static int digi(int fd, struct uart_t *u, struct termios *ti)
- {
- 	struct timespec tm = {0, 50000};
-@@ -326,6 +330,7 @@ static int intel(int fd, struct uart_t *u, struct termios *ti)
- {
- 	return intel_init(fd, u->init_speed, &u->speed, ti);
- }
-+*/
- 
+-/*
+- * Digianswer specific initialization
+- */
+-static int digi(int fd, struct uart_t *u, struct termios *ti)
+-{
+-	struct timespec tm = {0, 50000};
+-	char cmd[5];
+-
+-	/* DigiAnswer set baud rate command */
+-	cmd[0] = HCI_COMMAND_PKT;
+-	cmd[1] = 0x07;
+-	cmd[2] = 0xfc;
+-	cmd[3] = 0x01;
+-
+-	switch (u->speed) {
+-	case 57600:
+-		cmd[4] = 0x08;
+-		break;
+-	case 115200:
+-		cmd[4] = 0x09;
+-		break;
+-	default:
+-		cmd[4] = 0x09;
+-		u->speed = 115200;
+-		break;
+-	}
+-
+-	/* Send initialization command */
+-	if (write(fd, cmd, 5) != 5) {
+-		perror("Failed to write init command");
+-		return -1;
+-	}
+-
+-	nanosleep(&tm, NULL);
+-	return 0;
+-}
+-
+-static int texas(int fd, struct uart_t *u, struct termios *ti)
+-{
+-	return texas_init(fd, &u->speed, ti);
+-}
+-
+-static int texas2(int fd, struct uart_t *u, struct termios *ti)
+-{
+-	return texas_post(fd, ti);
+-}
+-
+-static int texasalt(int fd, struct uart_t *u, struct termios *ti)
+-{
+-	return texasalt_init(fd, u->speed, ti);
+-}
+-
+-static int ath3k_ps(int fd, struct uart_t *u, struct termios *ti)
+-{
+-	return ath3k_init(fd, u->speed, u->init_speed, u->bdaddr, ti);
+-}
+-
+-static int ath3k_pm(int fd, struct uart_t *u, struct termios *ti)
+-{
+-	return ath3k_post(fd, u->pm);
+-}
+-
+-static int qualcomm(int fd, struct uart_t *u, struct termios *ti)
+-{
+-	return qualcomm_init(fd, u->speed, ti, u->bdaddr);
+-}
+-
+-static int intel(int fd, struct uart_t *u, struct termios *ti)
+-{
+-	return intel_init(fd, u->init_speed, &u->speed, ti);
+-}
+-
  static int read_check(int fd, void *buf, int count)
  {
-@@ -692,6 +697,7 @@ static int csr(int fd, struct uart_t *u, struct termios *ti)
-  * Silicon Wave specific initialization
-  * Thomas Moser <thomas.moser@tmoser.ch>
-  */
-+/*
- static int swave(int fd, struct uart_t *u, struct termios *ti)
- {
- 	struct timespec tm = { 0, 500000 };
-@@ -792,6 +798,7 @@ static int swave(int fd, struct uart_t *u, struct termios *ti)
- 
- 	return 0;
+ 	int res;
+@@ -689,111 +619,6 @@ static int csr(int fd, struct uart_t *u, struct termios *ti)
  }
-+*/
  
  /*
+- * Silicon Wave specific initialization
+- * Thomas Moser <thomas.moser@tmoser.ch>
+- */
+-static int swave(int fd, struct uart_t *u, struct termios *ti)
+-{
+-	struct timespec tm = { 0, 500000 };
+-	char cmd[10], rsp[100];
+-	int r;
+-
+-	// Silicon Wave set baud rate command
+-	// see HCI Vendor Specific Interface from Silicon Wave
+-	// first send a "param access set" command to set the
+-	// appropriate data fields in RAM. Then send a "HCI Reset
+-	// Subcommand", e.g. "soft reset" to make the changes effective.
+-
+-	cmd[0] = HCI_COMMAND_PKT;	// it's a command packet
+-	cmd[1] = 0x0B;			// OCF 0x0B	= param access set
+-	cmd[2] = 0xfc;			// OGF bx111111 = vendor specific
+-	cmd[3] = 0x06;			// 6 bytes of data following
+-	cmd[4] = 0x01;			// param sub command
+-	cmd[5] = 0x11;			// tag 17 = 0x11 = HCI Transport Params
+-	cmd[6] = 0x03;			// length of the parameter following
+-	cmd[7] = 0x01;			// HCI Transport flow control enable
+-	cmd[8] = 0x01;			// HCI Transport Type = UART
+-
+-	switch (u->speed) {
+-	case 19200:
+-		cmd[9] = 0x03;
+-		break;
+-	case 38400:
+-		cmd[9] = 0x02;
+-		break;
+-	case 57600:
+-		cmd[9] = 0x01;
+-		break;
+-	case 115200:
+-		cmd[9] = 0x00;
+-		break;
+-	default:
+-		u->speed = 115200;
+-		cmd[9] = 0x00;
+-		break;
+-	}
+-
+-	/* Send initialization command */
+-	if (write(fd, cmd, 10) != 10) {
+-		perror("Failed to write init command");
+-		return -1;
+-	}
+-
+-	// We should wait for a "GET Event" to confirm the success of
+-	// the baud rate setting. Wait some time before reading. Better:
+-	// read with timeout, parse data
+-	// until correct answer, else error handling ... todo ...
+-
+-	nanosleep(&tm, NULL);
+-
+-	r = read(fd, rsp, sizeof(rsp));
+-	if (r > 0) {
+-		// guess it's okay, but we should parse the reply. But since
+-		// I don't react on an error anyway ... todo
+-		// Response packet format:
+-		//  04	Event
+-		//  FF	Vendor specific
+-		//  07	Parameter length
+-		//  0B	Subcommand
+-		//  01	Setevent
+-		//  11	Tag specifying HCI Transport Layer Parameter
+-		//  03	length
+-		//  01	flow on
+-		//  01 	Hci Transport type = Uart
+-		//  xx	Baud rate set (see above)
+-	} else {
+-		// ups, got error.
+-		return -1;
+-	}
+-
+-	// we probably got the reply. Now we must send the "soft reset"
+-	// which is standard HCI RESET.
+-
+-	cmd[0] = HCI_COMMAND_PKT;	// it's a command packet
+-	cmd[1] = 0x03;
+-	cmd[2] = 0x0c;
+-	cmd[3] = 0x00;
+-
+-	/* Send reset command */
+-	if (write(fd, cmd, 4) != 4) {
+-		perror("Can't write Silicon Wave reset cmd.");
+-		return -1;
+-	}
+-
+-	nanosleep(&tm, NULL);
+-
+-	// now the uart baud rate on the silicon wave module is set and effective.
+-	// change our own baud rate as well. Then there is a reset event coming in
+- 	// on the *new* baud rate. This is *undocumented*! The packet looks like this:
+-	// 04 FF 01 0B (which would make that a confirmation of 0x0B = "Param
+-	// subcommand class". So: change to new baud rate, read with timeout, parse
+-	// data, error handling. BTW: all param access in Silicon Wave is done this way.
+-	// Maybe this code would belong in a separate file, or at least code reuse...
+-
+-	return 0;
+-}
+-
+-/*
   * ST Microelectronics specific initialization
-@@ -849,6 +856,7 @@ static int st(int fd, struct uart_t *u, struct termios *ti)
- 	return 0;
- }
- 
-+/*
- static int stlc2500(int fd, struct uart_t *u, struct termios *ti)
- {
- 	bdaddr_t bdaddr;
-@@ -897,11 +905,14 @@ static int bgb2xx(int fd, struct uart_t *u, struct termios *ti)
- 
- 	return bgb2xx_init(fd, &bdaddr);
- }
-+*/
- 
- /*
-  * Broadcom specific initialization
-  * Extracted from Jungo openrg
+  * Marcel Holtmann <marcel@holtmann.org>
   */
-+
-+/*
- static int bcm2035(int fd, struct uart_t *u, struct termios *ti)
- {
- 	int n;
-@@ -1038,6 +1049,7 @@ static int bcm2035(int fd, struct uart_t *u, struct termios *ti)
- 
+@@ -849,196 +674,6 @@ static int st(int fd, struct uart_t *u, struct termios *ti)
  	return 0;
  }
-+*/
  
+-static int stlc2500(int fd, struct uart_t *u, struct termios *ti)
+-{
+-	bdaddr_t bdaddr;
+-	unsigned char resp[10];
+-	int n;
+-	int rvalue;
+-
+-	/* STLC2500 has an ericsson core */
+-	rvalue = ericsson(fd, u, ti);
+-	if (rvalue != 0)
+-		return rvalue;
+-
+-#ifdef STLC2500_DEBUG
+-	fprintf(stderr, "Setting speed\n");
+-#endif
+-	if (set_speed(fd, ti, u->speed) < 0) {
+-		perror("Can't set baud rate");
+-		return -1;
+-	}
+-
+-#ifdef STLC2500_DEBUG
+-	fprintf(stderr, "Speed set...\n");
+-#endif
+-
+-	/* Read reply */
+-	if ((n = read_hci_event(fd, resp, 10)) < 0) {
+-		fprintf(stderr, "Failed to set baud rate on chip\n");
+-		return -1;
+-	}
+-
+-#ifdef STLC2500_DEBUG
+-	for (i = 0; i < n; i++) {
+-		fprintf(stderr, "resp[%d] = %02x\n", i, resp[i]);
+-	}
+-#endif
+-
+-	str2ba(u->bdaddr, &bdaddr);
+-	return stlc2500_init(fd, &bdaddr);
+-}
+-
+-static int bgb2xx(int fd, struct uart_t *u, struct termios *ti)
+-{
+-	bdaddr_t bdaddr;
+-
+-	str2ba(u->bdaddr, &bdaddr);
+-
+-	return bgb2xx_init(fd, &bdaddr);
+-}
+-
+-/*
+- * Broadcom specific initialization
+- * Extracted from Jungo openrg
+- */
+-static int bcm2035(int fd, struct uart_t *u, struct termios *ti)
+-{
+-	int n;
+-	unsigned char cmd[30], resp[30];
+-
+-	/* Reset the BT Chip */
+-	memset(cmd, 0, sizeof(cmd));
+-	memset(resp, 0, sizeof(resp));
+-	cmd[0] = HCI_COMMAND_PKT;
+-	cmd[1] = 0x03;
+-	cmd[2] = 0x0c;
+-	cmd[3] = 0x00;
+-
+-	/* Send command */
+-	if (write(fd, cmd, 4) != 4) {
+-		fprintf(stderr, "Failed to write reset command\n");
+-		return -1;
+-	}
+-
+-	/* Read reply */
+-	if ((n = read_hci_event(fd, resp, 4)) < 0) {
+-		fprintf(stderr, "Failed to reset chip\n");
+-		return -1;
+-	}
+-
+-	if (u->bdaddr != NULL) {
+-		/* Set BD_ADDR */
+-		memset(cmd, 0, sizeof(cmd));
+-		memset(resp, 0, sizeof(resp));
+-		cmd[0] = HCI_COMMAND_PKT;
+-		cmd[1] = 0x01;
+-		cmd[2] = 0xfc;
+-		cmd[3] = 0x06;
+-		str2ba(u->bdaddr, (bdaddr_t *) (cmd + 4));
+-
+-		/* Send command */
+-		if (write(fd, cmd, 10) != 10) {
+-			fprintf(stderr, "Failed to write BD_ADDR command\n");
+-			return -1;
+-		}
+-
+-		/* Read reply */
+-		if ((n = read_hci_event(fd, resp, 10)) < 0) {
+-			fprintf(stderr, "Failed to set BD_ADDR\n");
+-			return -1;
+-		}
+-	}
+-
+-	/* Read the local version info */
+-	memset(cmd, 0, sizeof(cmd));
+-	memset(resp, 0, sizeof(resp));
+-	cmd[0] = HCI_COMMAND_PKT;
+-	cmd[1] = 0x01;
+-	cmd[2] = 0x10;
+-	cmd[3] = 0x00;
+-
+-	/* Send command */
+-	if (write(fd, cmd, 4) != 4) {
+-		fprintf(stderr, "Failed to write \"read local version\" "
+-			"command\n");
+-		return -1;
+-	}
+-
+-	/* Read reply */
+-	if ((n = read_hci_event(fd, resp, 4)) < 0) {
+-		fprintf(stderr, "Failed to read local version\n");
+-		return -1;
+-	}
+-
+-	/* Read the local supported commands info */
+-	memset(cmd, 0, sizeof(cmd));
+-	memset(resp, 0, sizeof(resp));
+-	cmd[0] = HCI_COMMAND_PKT;
+-	cmd[1] = 0x02;
+-	cmd[2] = 0x10;
+-	cmd[3] = 0x00;
+-
+-	/* Send command */
+-	if (write(fd, cmd, 4) != 4) {
+-		fprintf(stderr, "Failed to write \"read local supported "
+-						"commands\" command\n");
+-		return -1;
+-	}
+-
+-	/* Read reply */
+-	if ((n = read_hci_event(fd, resp, 4)) < 0) {
+-		fprintf(stderr, "Failed to read local supported commands\n");
+-		return -1;
+-	}
+-
+-	/* Set the baud rate */
+-	memset(cmd, 0, sizeof(cmd));
+-	memset(resp, 0, sizeof(resp));
+-	cmd[0] = HCI_COMMAND_PKT;
+-	cmd[1] = 0x18;
+-	cmd[2] = 0xfc;
+-	cmd[3] = 0x02;
+-	switch (u->speed) {
+-	case 57600:
+-		cmd[4] = 0x00;
+-		cmd[5] = 0xe6;
+-		break;
+-	case 230400:
+-		cmd[4] = 0x22;
+-		cmd[5] = 0xfa;
+-		break;
+-	case 460800:
+-		cmd[4] = 0x22;
+-		cmd[5] = 0xfd;
+-		break;
+-	case 921600:
+-		cmd[4] = 0x55;
+-		cmd[5] = 0xff;
+-		break;
+-	default:
+-		/* Default is 115200 */
+-		cmd[4] = 0x00;
+-		cmd[5] = 0xf3;
+-		break;
+-	}
+-	fprintf(stderr, "Baud rate parameters: DHBR=0x%2x,DLBR=0x%2x\n",
+-		cmd[4], cmd[5]);
+-
+-	/* Send command */
+-	if (write(fd, cmd, 6) != 6) {
+-		fprintf(stderr, "Failed to write \"set baud rate\" command\n");
+-		return -1;
+-	}
+-
+-	if ((n = read_hci_event(fd, resp, 6)) < 0) {
+-		fprintf(stderr, "Failed to set baud rate\n");
+-		return -1;
+-	}
+-
+-	return 0;
+-}
+-
  struct uart_t uart[] = {
  	{ "any",        0x0000, 0x0000, HCI_UART_H4,   115200, 115200,
-@@ -1075,6 +1087,10 @@ struct uart_t uart[] = {
+ 				FLOW_CTL, DISABLE_PM, NULL, NULL     },
+@@ -1075,6 +710,10 @@ struct uart_t uart[] = {
  	{ "texasalt",   0x0000, 0x0000, HCI_UART_LL,   115200, 115200,
  				FLOW_CTL, DISABLE_PM, NULL, texasalt, NULL   },
  
@@ -128,7 +449,7 @@ index db01b85..db08a98 100644
  	/* ST Microelectronics minikits based on STLC2410/STLC2415 */
  	{ "st",         0x0000, 0x0000, HCI_UART_H4,    57600, 115200,
  				FLOW_CTL, DISABLE_PM,  NULL, st       },
-@@ -1178,10 +1194,10 @@ static struct uart_t * get_by_type(char *type)
+@@ -1178,10 +817,10 @@ static struct uart_t * get_by_type(char *type)
  }
  
  /* Initialize UART driver */
@@ -141,7 +462,7 @@ index db01b85..db08a98 100644
  	unsigned long flags = 0;
  
  	if (raw)
-@@ -1241,8 +1257,7 @@ static int init_uart(char *dev, struct uart_t *u, int send_break, int raw)
+@@ -1241,8 +880,7 @@ static int init_uart(char *dev, struct uart_t *u, int send_break, int raw)
  	}
  
  	/* Set TTY to N_HCI line discipline */
@@ -151,7 +472,7 @@ index db01b85..db08a98 100644
  		perror("Can't set line discipline");
  		return -1;
  	}
-@@ -1267,7 +1282,7 @@ static void usage(void)
+@@ -1267,7 +905,7 @@ static void usage(void)
  {
  	printf("hciattach - HCI UART driver initialization utility\n");
  	printf("Usage:\n");
@@ -160,7 +481,7 @@ index db01b85..db08a98 100644
  	printf("\thciattach -l\n");
  }
  
-@@ -1276,6 +1291,7 @@ int main(int argc, char *argv[])
+@@ -1276,6 +914,7 @@ int main(int argc, char *argv[])
  	struct uart_t *u = NULL;
  	int detach, printpid, raw, opt, i, n, ld, err;
  	int to = 10;
@@ -168,7 +489,7 @@ index db01b85..db08a98 100644
  	int init_speed = 0;
  	int send_break = 0;
  	pid_t pid;
-@@ -1288,8 +1304,11 @@ int main(int argc, char *argv[])
+@@ -1288,8 +927,11 @@ int main(int argc, char *argv[])
  	printpid = 0;
  	raw = 0;
  
@@ -181,7 +502,7 @@ index db01b85..db08a98 100644
  		case 'b':
  			send_break = 1;
  			break;
-@@ -1405,7 +1424,7 @@ int main(int argc, char *argv[])
+@@ -1405,7 +1047,7 @@ int main(int argc, char *argv[])
  	alarm(to);
  	bcsp_max_retries = to;
  
@@ -190,10 +511,10 @@ index db01b85..db08a98 100644
  	if (n < 0) {
  		perror("Can't initialize device");
  		exit(1);
-diff --git a/external/bluetooth/bluez/tools/hciattach.h b/external/bluetooth/bluez/tools/hciattach.h
+diff --git a/tools/hciattach.h b/tools/hciattach.h
 index 1b23ad7..026885e 100644
---- a/external/bluetooth/bluez/tools/hciattach.h
-+++ b/external/bluetooth/bluez/tools/hciattach.h
+--- a/tools/hciattach.h
++++ b/tools/hciattach.h
 @@ -39,6 +39,7 @@
  #define HCI_UART_H4DS	3
  #define HCI_UART_LL	4

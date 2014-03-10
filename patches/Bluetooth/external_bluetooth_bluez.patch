@@ -2,6 +2,15 @@ diff --git a/external/bluetooth/bluez/tools/hciattach.c b/external/bluetooth/blu
 index 62fbaff..e6c2e5f 100644
 --- a/external/bluetooth/bluez/tools/hciattach.c
 +++ b/external/bluetooth/bluez/tools/hciattach.c
+@@ -48,6 +48,8 @@
+ 
+ #include "hciattach.h"
+ 
++#include "ppoll.h"
++
+ struct uart_t {
+        char *type;
+        int  m_id;
 @@ -1076,6 +1076,10 @@ struct uart_t uart[] = {
  	{ "texasalt",   0x0000, 0x0000, HCI_UART_LL,   115200, 115200,
  				FLOW_CTL, DISABLE_PM, NULL, texasalt, NULL   },
@@ -123,18 +132,18 @@ index 082161c..76b5abb 100644
 +LOCAL_MODULE := hciattach
 +
 +include $(BUILD_EXECUTABLE)
-diff --git a/external/bluetooth/bluez/ppoll.h b/external/bluetooth/bluez/android/ppoll.h
+diff --git a/external/bluetooth/bluez/android/ppoll.h b/external/bluetooth/bluez/android/ppoll.h
 new file mode 100644
-index 0000000..1dfafa8
+index 0000000..0b758bd
 --- /dev/null
 +++ b/external/bluetooth/bluez/android/ppoll.h
-@@ -0,0 +1,17 @@
+@@ -0,0 +1,16 @@
 +#ifdef ppoll
 +#undef ppoll
 +#endif
-
++
 +#define ppoll compat_ppoll
-
++
 +static inline int compat_ppoll(struct pollfd *fds, nfds_t nfds,
 +                const struct timespec *timeout, const sigset_t *sigmask)
 +{

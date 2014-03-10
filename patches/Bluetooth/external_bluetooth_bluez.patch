@@ -11,7 +11,6 @@ index 62fbaff..e6c2e5f 100644
 struct uart_t {
 	char *type;
 	int  m_id;
-	int  p_id;
 @@ -1076,6 +1076,10 @@ struct uart_t uart[] = {
  	{ "texasalt",   0x0000, 0x0000, HCI_UART_LL,   115200, 115200,
  				FLOW_CTL, DISABLE_PM, NULL, texasalt, NULL   },

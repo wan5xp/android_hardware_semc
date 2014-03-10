@@ -25,8 +25,8 @@ index 082161c..af31384 100644
 +LOCAL_CFLAGS := $(BLUEZ_COMMON_CFLAGS)
 +
 +LOCAL_C_INCLUDES:= \
-+	$(LOCAL_PATH)/bluez/lib \	
-+	$(LOCAL_PATH)/bluez/android \	
++	$(LOCAL_PATH)/bluez/lib \
++	$(LOCAL_PATH)/bluez/android \
 +	$(LOCAL_PATH)/bluez/tools
 +
 +LOCAL_SHARED_LIBRARIES := \
@@ -44,7 +44,7 @@ index 082161c..af31384 100644
 +	bluez/lib/bluetooth.c \
 +	bluez/lib/hci.c \
 +	bluez/lib/sdp.c \
-+	bluez/lib/uuid.c \
++	bluez/lib/uuid.c
 +
 +LOCAL_C_INCLUDES:= \
 +	$(LOCAL_PATH)/bluez \

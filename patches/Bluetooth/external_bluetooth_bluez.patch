@@ -3,14 +3,15 @@ index 62fbaff..e6c2e5f 100644
 --- a/external/bluetooth/bluez/tools/hciattach.c
 +++ b/external/bluetooth/bluez/tools/hciattach.c
 @@ -48,6 +48,8 @@
- 
- #include "hciattach.h"
- 
+        
+#include "hciattach.h"
+
 +#include "ppoll.h"
 +
- struct uart_t {
-        char *type;
-        int  m_id;
+struct uart_t {
+	char *type;
+	int  m_id;
+	int  p_id;
 @@ -1076,6 +1076,10 @@ struct uart_t uart[] = {
  	{ "texasalt",   0x0000, 0x0000, HCI_UART_LL,   115200, 115200,
  				FLOW_CTL, DISABLE_PM, NULL, texasalt, NULL   },

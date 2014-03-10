@@ -128,7 +128,7 @@ new file mode 100644
 index 0000000..1dfafa8
 --- /dev/null
 +++ b/external/bluetooth/bluez/android/ppoll.h
-@@ -0,0 +1,16 @@
+@@ -0,0 +1,17 @@
 +#ifdef ppoll
 +#undef ppoll
 +#endif

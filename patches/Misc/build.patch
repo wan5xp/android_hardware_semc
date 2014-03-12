@@ -1,0 +1,14 @@
+
+project build/
+diff --git a/build/core/Makefile b/build/core/Makefile
+index 21ed8c5..829193c 100644
+--- a/build/core/Makefile
++++ b/build/core/Makefile
+@@ -1419,7 +1419,6 @@ $(INTERNAL_OTA_PACKAGE_TARGET): $(BUILT_TARGET_FILES_PACKAGE) $(DISTTOOLS)
+ 	   -k $(KEY_CERT_PAIR) \
+ 	   --backup=$(backuptool) \
+ 	   --override_device=$(override_device) \
+-	   --override_prop=$(override_prop) \
+ 	   $(BUILT_TARGET_FILES_PACKAGE) $@
+ 
+ CUSTOM_TARGET_PACKAGE := $(PRODUCT_OUT)/omni-$(ROM_VERSION).zip
